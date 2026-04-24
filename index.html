@@ -8,7 +8,6 @@
     <link rel="icon" type="image/x-icon" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
     <link rel="apple-touch-icon" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
 
     <style>
         body {
@@ -22,136 +21,51 @@
         }
 
         /* --- SYNC BAR --- */
-        #syncBar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .sync-btn {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            color: #555;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            padding: 6px 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .sync-btn:hover { border-color: #777; color: #999; }
-
-        #syncStatus {
-            font-size: 10px;
-            letter-spacing: 1px;
-            padding: 4px 10px;
-            border-radius: 2px;
-            transition: all 0.3s;
-        }
-        .status-ok { color: #4a7; }
-        .status-err { color: #f44; font-weight: bold; }
-        .status-working { color: #888; }
-
-        #setupPanel { display: none; gap: 8px; margin-top: 10px; width: 100%; justify-content: center; }
-        #setupPanel.visible { display: flex; }
-        #setupPanel input { 
-            background: #111; border: 1px solid #333; color: #777; 
-            width: 150px; padding: 5px; font-size: 10px; 
-            font-family: 'Courier New', monospace; outline: none;
-        }
-
-        /* --- DASHBOARD CONTROLS & DROPDOWN --- */
-        .controls-container { margin-bottom: 30px; text-align: center; }
+        #syncBar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         
-        .autocomplete-wrapper {
-            display: inline-block;
-            position: relative;
-        }
+        .sync-btn { background: #0a0a0a; border: 1px solid #333; color: #555; font-family: 'Courier New', monospace; font-size: 11px; padding: 6px 12px; cursor: pointer; transition: all 0.2s; }
+        .sync-btn:hover { border-color: #777; color: #999; }
+        .sync-btn.highlight { border-color: #aaa; color: #aaa; } /* Changed from green to bright gray for stealth */
+        
+        #syncStatus { font-size: 10px; letter-spacing: 1px; padding: 4px 10px; border-radius: 2px; }
+        .status-ok { color: #4a7; } .status-err { color: #f44; font-weight: bold; } .status-working { color: #888; }
+        
+        #setupPanel { display: none; gap: 8px; margin-bottom: 15px; width: 100%; justify-content: center; }
+        #setupPanel.visible { display: flex; }
+        #setupPanel input { background: #111; border: 1px solid #333; color: #777; width: 150px; padding: 5px; font-size: 10px; font-family: 'Courier New', monospace; outline: none; }
 
-        input#tickerInput {
-            background-color: #111;
-            border: 1px solid #333;
-            color: #777;
-            padding: 12px;
-            width: 350px;
-            font-family: 'Courier New', monospace;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input#tickerInput:focus { border-color: #555; }
+        /* --- RAW BULK EDITOR --- */
+        #rawEditorContainer { display: none; flex-direction: column; align-items: center; width: 100%; margin-bottom: 30px; }
+        #rawEditorContainer.visible { display: flex; }
+        textarea#rawEditor { background-color: #0a0a0a; color: #777; border: 1px solid #333; width: 100%; max-width: 600px; height: 350px; font-family: 'Courier New', monospace; padding: 15px; outline: none; resize: vertical; line-height: 1.5; }
+        textarea#rawEditor:focus { border-color: #555; }
 
-        #suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: #0a0a0a;
-            border: 1px solid #222;
-            border-top: none;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            text-align: left;
-            box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
-        }
-        #suggestions::-webkit-scrollbar { width: 4px; }
-        #suggestions::-webkit-scrollbar-thumb { background: #333; }
+        /* --- DASHBOARD GRID --- */
+        .dashboard-grid { display: grid; gap: 30px; grid-template-columns: 1fr; align-items: start; }
+        @media (min-width: 800px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1200px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
 
-        .suggestion-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #111;
-            display: flex;
-            justify-content: space-between;
-        }
-        .suggestion-item:hover { background-color: #1a1a1a; color: #999; }
-        .sugg-exchange { font-size: 10px; color: #444; }
-
-        /* --- STEALTH LIST (Text Rows) --- */
-        #stealthList { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
-        .stealth-row {
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
-            padding: 15px 0; border-bottom: 1px solid #1a1a1a; width: 100%; max-width: 1200px;
-        }
-        .stealth-row:last-child { border-bottom: none; }
-
-        .invisible-item { 
-            color: #333; font-size: 12px; cursor: grab; padding: 4px 8px; user-select: none; 
-            transition: color 0.2s, transform 0.2s;
-        }
-        .invisible-item:active { cursor: grabbing; }
-        .invisible-item:hover { color: #777; }
-        .separator-item { color: #444; font-weight: bold; border-bottom: 1px solid #222; }
-
-        .drag-over { border-left: 2px solid #555; opacity: 0.8; }
-
-        /* --- CHARTS GRID --- */
-        .dashboard-grid {
-            display: grid; gap: 20px;
-            grid-template-columns: 1fr;
-        }
-        @media (min-width: 768px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1100px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
-
-        .stealth-widget { 
-            filter: grayscale(100%) contrast(1.2); 
-            opacity: 0.7; 
-            transition: all 0.3s ease; 
-            min-width: 0; 
-        }
+        .dashboard-card { display: flex; flex-direction: column; width: 100%; }
+        
+        .stealth-widget { filter: grayscale(100%) contrast(1.2); opacity: 0.7; transition: all 0.3s ease; width: 100%; }
         .stealth-widget:hover { opacity: 1; }
 
-        /* --- COLOR MODE TOGGLE --- */
-        body.color-mode .stealth-widget {
-            filter: grayscale(0%) contrast(1);
-            opacity: 1;
+        /* --- FLOATING JOURNAL MODAL --- */
+        #journalModal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 600px; background: #0a0a0a; border: 1px solid #333; z-index: 9000;
+            flex-direction: column; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.95);
         }
-        body.color-mode .invisible-item {
-            color: #666;
-        }
+        #journalModal.visible { display: flex; }
+        .journal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed #444; padding-bottom: 10px; }
+        .journal-header span { color: #666; font-weight: bold; font-size: 11px; }
+        .journal-header button { background: none; border: none; color: #555; cursor: pointer; font-family: monospace; transition: 0.2s; }
+        .journal-header button:hover { color: #fff; }
+        textarea#stealthJournal { background-color: transparent; border: none; color: #777; font-family: 'Courier New', monospace; width: 100%; height: 250px; outline: none; resize: vertical; line-height: 1.4; }
+        textarea#stealthJournal:focus { color: #aaa; }
+
+        /* --- COLOR MODE --- */
+        body.color-mode .stealth-widget { filter: grayscale(0%) contrast(1); opacity: 1; }
     </style>
 </head>
 <body>
@@ -159,6 +73,8 @@
     <div id="syncBar">
         <button class="sync-btn" onclick="toggleSetup()">⚙ CONFIG</button>
         <button class="sync-btn" id="colorToggleBtn" onclick="toggleColors()">◑ COLOR</button>
+        <button class="sync-btn highlight" onclick="toggleRawEdit()" id="bulkEditBtn">▤ BULK EDIT</button>
+        <button class="sync-btn" onclick="toggleJournal()">⊟ NOTES</button>
         <span id="syncStatus" class="status-working">INITIALIZING...</span>
         
         <div id="setupPanel">
@@ -168,71 +84,61 @@
         </div>
     </div>
 
-    <div class="controls-container">
-        <div class="autocomplete-wrapper">
-            <input type="text" id="tickerInput" placeholder="Symbol, ---, or --- NAME" autocomplete="off">
-            <div id="suggestions"></div>
+    <div id="rawEditorContainer">
+        <p style="font-size: 11px; margin-bottom: 10px; text-align: center;">Use <strong>--- Name</strong> for groups, <strong>=== Name</strong> for new columns. <br>Ex: NASDAQ:AAPL</p>
+        <textarea id="rawEditor" spellcheck="false"></textarea>
+        <div style="margin-top: 10px; gap: 10px; display: flex;">
+            <button class="sync-btn highlight" onclick="saveRawEdit()">💾 SAVE & REBUILD</button>
+            <button class="sync-btn" onclick="toggleRawEdit()">☒ CANCEL</button>
         </div>
-        <p style="font-size: 9px; color: #222; margin-top: 10px;">Drag to reorder. Double-tap/Double-click to delete.</p>
     </div>
 
-    <div id="stealthList"></div>
-    <div id="dashboard" class="dashboard-grid"></div>
+    <div id="mainDashboardArea">
+        <div id="dashboard" class="dashboard-grid"></div>
+    </div>
+
+    <div id="journalModal">
+        <div class="journal-header">
+            <span>--- SECURE LOGS</span>
+            <button onclick="toggleJournal()">[ X ]</button>
+        </div>
+        <textarea id="stealthJournal" placeholder="Log trades, ideas, or structural calculations here..."></textarea>
+    </div>
 
     <script>
-        // --- INTERNAL DATABASE ---
-        const popularTickers = [
-            { symbol: "AAPL", exchange: "NASDAQ" }, { symbol: "MSFT", exchange: "NASDAQ" },
-            { symbol: "GOOGL", exchange: "NASDAQ" }, { symbol: "AMZN", exchange: "NASDAQ" },
-            { symbol: "NVDA", exchange: "NASDAQ" }, { symbol: "META", exchange: "NASDAQ" },
-            { symbol: "TSLA", exchange: "NASDAQ" }, { symbol: "NFLX", exchange: "NASDAQ" },
-            { symbol: "BRK.B", exchange: "NYSE" }, { symbol: "V", exchange: "NYSE" },
-            { symbol: "JPM", exchange: "NYSE" }, { symbol: "WMT", exchange: "NYSE" },
-            { symbol: "BTCUSDT", exchange: "BINANCE" }, { symbol: "ETHUSDT", exchange: "BINANCE" },
-            { symbol: "SOLUSDT", exchange: "BINANCE" }, { symbol: "XRPUSDT", exchange: "BINANCE" },
-            { symbol: "ES1!", exchange: "CME_MINI" }, { symbol: "NQ1!", exchange: "CME_MINI" },
-            { symbol: "GC1!", exchange: "COMEX" }, { symbol: "CL1!", exchange: "NYMEX" },
-            { symbol: "EURUSD", exchange: "FX" }, { symbol: "GBPUSD", exchange: "FX" }
-        ];
-
-        let myTickers = JSON.parse(localStorage.getItem('stealthTickers')) || [];
+        let myTickers = [];
+        let myJournal = "";
         const GIST_FILENAME = 'tickers.json';
 
         const dashboard = document.getElementById('dashboard');
-        const stealthListContainer = document.getElementById('stealthList');
-        const inputField = document.getElementById('tickerInput');
-        const suggestionsBox = document.getElementById('suggestions');
+        const journalInput = document.getElementById('stealthJournal');
+        let journalTimeout;
 
-        // --- COLOR MODE LOGIC ---
+        // --- LOCAL STORAGE LOAD ---
+        try {
+            const localData = JSON.parse(localStorage.getItem('stealthData'));
+            if (localData && !Array.isArray(localData)) {
+                myTickers = localData.tickers || [];
+                myJournal = localData.journal || "";
+            } else if (Array.isArray(localData)) { 
+                myTickers = localData;
+            }
+        } catch(e) {}
+        
+        journalInput.value = myJournal;
+
+        // --- COLOR MODE ---
         let isColorMode = localStorage.getItem('colorMode') === 'true';
-
         function applyColorMode() {
             const btn = document.getElementById('colorToggleBtn');
-            if (isColorMode) {
-                document.body.classList.add('color-mode');
-                if (btn) btn.innerText = '◑ STEALTH';
-            } else {
-                document.body.classList.remove('color-mode');
-                if (btn) btn.innerText = '◑ COLOR';
-            }
+            if (isColorMode) { document.body.classList.add('color-mode'); if(btn) btn.innerText = '◑ STEALTH'; } 
+            else { document.body.classList.remove('color-mode'); if(btn) btn.innerText = '◑ COLOR'; }
         }
+        function toggleColors() { isColorMode = !isColorMode; localStorage.setItem('colorMode', isColorMode); applyColorMode(); }
 
-        function toggleColors() {
-            isColorMode = !isColorMode;
-            localStorage.setItem('colorMode', isColorMode);
-            applyColorMode();
-        }
-
-        // --- FULLY AUTOMATED SYNC CORE ---
-        function setStatus(msg, className) {
-            const el = document.getElementById('syncStatus');
-            el.textContent = msg;
-            el.className = className;
-        }
-
-        function getCreds() {
-            return { token: localStorage.getItem('gistToken'), id: localStorage.getItem('gistId') };
-        }
+        // --- SYNC CORE ---
+        function setStatus(msg, className) { document.getElementById('syncStatus').textContent = msg; document.getElementById('syncStatus').className = className; }
+        function getCreds() { return { token: localStorage.getItem('gistToken'), id: localStorage.getItem('gistId') }; }
 
         function toggleSetup() {
             const panel = document.getElementById('setupPanel');
@@ -248,299 +154,152 @@
             localStorage.setItem('gistToken', document.getElementById('tokenInput').value.trim());
             localStorage.setItem('gistId', document.getElementById('gistIdInput').value.trim());
             document.getElementById('setupPanel').classList.remove('visible');
-            autoPullFromGist(); // Pull instantly on save
+            autoPullFromGist(); 
         }
 
-        // Auto-Push: Called silently whenever a change is made locally
         async function autoPushToGist() {
             const { token, id } = getCreds();
-            if (!token) return; // Silent fail if not set up
+            if (!token) return; 
+            setStatus('SAVING...', 'status-working');
             
-            setStatus('SAVING TO CLOUD...', 'status-working');
-            const content = JSON.stringify(myTickers);
-            const url = id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists';
-
+            const payload = { tickers: myTickers, journal: myJournal };
+            
             try {
-                const res = await fetch(url, {
+                const res = await fetch(id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists', {
                     method: id ? 'PATCH' : 'POST',
                     headers: { 'Authorization': `token ${token}` },
-                    body: JSON.stringify({ 
-                        public: false, 
-                        files: { [GIST_FILENAME]: { content } } 
-                    })
+                    body: JSON.stringify({ public: false, files: { [GIST_FILENAME]: { content: JSON.stringify(payload) } } })
                 });
-                if (!id) {
-                    const data = await res.json();
-                    localStorage.setItem('gistId', data.id);
-                }
+                if (!id) localStorage.setItem('gistId', (await res.json()).id);
                 setStatus('✓ SYNCED', 'status-ok');
-            } catch (e) { 
-                setStatus('SYNC FAILED', 'status-err'); 
-            }
+            } catch (e) { setStatus('SYNC FAILED', 'status-err'); }
         }
 
-        // Auto-Pull: Called on page load to grab the latest cloud data unconditionally
         async function autoPullFromGist() {
             const { token, id } = getCreds();
-            if (!token || !id) {
-                setStatus('LOCAL MODE (NOT SYNCED)', 'status-working');
-                return;
-            }
-            
-            setStatus('UPDATING FROM CLOUD...', 'status-working');
+            if (!token || !id) { setStatus('LOCAL MODE', 'status-working'); return; }
+            setStatus('UPDATING...', 'status-working');
             try {
-                const res = await fetch(`https://api.github.com/gists/${id}?t=${Date.now()}`, {
-                    headers: { 'Authorization': `token ${token}` }
-                });
-                const data = await res.json();
+                const res = await fetch(`https://api.github.com/gists/${id}?t=${Date.now()}`, { headers: { 'Authorization': `token ${token}` } });
+                const cloudContent = JSON.parse((await res.json()).files[GIST_FILENAME].content);
                 
-                const cloudContent = data.files[GIST_FILENAME].content;
-                myTickers = JSON.parse(cloudContent);
-                localStorage.setItem('stealthTickers', JSON.stringify(myTickers));
+                if (Array.isArray(cloudContent)) {
+                    myTickers = cloudContent; 
+                } else {
+                    myTickers = cloudContent.tickers || [];
+                    myJournal = cloudContent.journal || "";
+                }
                 
+                localStorage.setItem('stealthData', JSON.stringify({ tickers: myTickers, journal: myJournal }));
+                journalInput.value = myJournal;
                 renderApp();
                 setStatus('✓ SYNCED', 'status-ok');
-            } catch (e) { 
-                setStatus('UPDATE FAILED', 'status-err'); 
+            } catch (e) { setStatus('UPDATE FAILED', 'status-err'); }
+        }
+
+        // --- BULK RAW EDITOR ---
+        function toggleRawEdit() {
+            const editor = document.getElementById('rawEditorContainer');
+            const main = document.getElementById('mainDashboardArea');
+            const btn = document.getElementById('bulkEditBtn');
+            
+            if (editor.classList.contains('visible')) {
+                editor.classList.remove('visible');
+                main.style.display = 'block';
+                btn.innerText = '▤ BULK EDIT';
+            } else {
+                document.getElementById('rawEditor').value = myTickers.join('\n');
+                editor.classList.add('visible');
+                main.style.display = 'none';
+                btn.innerText = '☒ CANCEL';
             }
         }
 
-        // --- AUTOCOMPLETE LOGIC ---
-        inputField.addEventListener('input', function() {
-            const query = this.value.toUpperCase();
-            suggestionsBox.innerHTML = '';
-            
-            if (!query || query.startsWith('---')) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
+        function saveRawEdit() {
+            const rawText = document.getElementById('rawEditor').value;
+            myTickers = rawText.split('\n').map(t => t.trim()).filter(t => t !== "");
+            toggleRawEdit();
+            saveLocalAndPush();
+        }
 
-            const matches = popularTickers.filter(t => t.symbol.includes(query) || t.exchange.includes(query));
-            
-            if (matches.length > 0) {
-                suggestionsBox.style.display = 'block';
-                matches.forEach(match => {
-                    const fullTicker = `${match.exchange}:${match.symbol}`;
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerHTML = `<span>${match.symbol}</span> <span class="sugg-exchange">${match.exchange}</span>`;
-                    
-                    div.onclick = function() {
-                        addTicker(fullTicker);
-                        suggestionsBox.style.display = 'none';
-                        inputField.value = '';
-                    };
-                    suggestionsBox.appendChild(div);
-                });
-            } else {
-                suggestionsBox.style.display = 'block';
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.innerHTML = `<span>Add manually:</span> <span class="sugg-exchange">${query}</span>`;
-                div.onclick = function() {
-                    addTicker(query);
-                    suggestionsBox.style.display = 'none';
-                    inputField.value = '';
-                };
-                suggestionsBox.appendChild(div);
-            }
+        // --- JOURNAL LOGIC ---
+        function toggleJournal() {
+            const modal = document.getElementById('journalModal');
+            modal.classList.toggle('visible');
+            if(modal.classList.contains('visible')) { journalInput.focus(); }
+        }
+
+        journalInput.addEventListener('input', () => {
+            myJournal = journalInput.value;
+            localStorage.setItem('stealthData', JSON.stringify({ tickers: myTickers, journal: myJournal }));
+            setStatus('TYPING...', 'status-working');
+            clearTimeout(journalTimeout);
+            journalTimeout = setTimeout(() => { autoPushToGist(); }, 1500); 
         });
 
-        document.addEventListener('click', function(e) {
-            if(e.target !== inputField && e.target !== suggestionsBox) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
+        function saveLocalAndPush() { localStorage.setItem('stealthData', JSON.stringify({ tickers: myTickers, journal: myJournal })); renderApp(); autoPushToGist(); }
 
-        inputField.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const query = this.value.trim().toUpperCase();
-                if (query) {
-                    addTicker(query);
-                    suggestionsBox.style.display = 'none';
-                    inputField.value = '';
-                }
-            }
-        });
-
-        // --- TICKER MANAGEMENT ---
+        // --- TICKER LOGIC ---
         function getTickerChunks() {
             let chunks = [], currentChunk = [];
-            myTickers.forEach((item, index) => {
-                currentChunk.push({ item: item, originalIndex: index });
-                if (currentChunk.filter(i => !i.item.startsWith('---')).length >= 15) {
-                    chunks.push(currentChunk); currentChunk = [];
-                }
+            myTickers.forEach((item) => {
+                if (item.startsWith('===') && currentChunk.length > 0) { chunks.push(currentChunk); currentChunk = []; }
+                currentChunk.push(item);
             });
             if (currentChunk.length > 0) chunks.push(currentChunk);
             return chunks;
         }
 
-        function addTicker(tickerString) {
-            if (tickerString.startsWith('---')) {
-                myTickers.push(tickerString);
-                saveLocalAndPush();
-                return;
-            }
-            if (!tickerString.includes(':')) {
-                const found = popularTickers.find(t => t.symbol === tickerString);
-                if (found) tickerString = `${found.exchange}:${found.symbol}`;
-            }
-            myTickers.push(tickerString);
-            saveLocalAndPush();
-        }
-
-        function removeTicker(index) {
-            myTickers.splice(index, 1);
-            saveLocalAndPush();
-        }
-
-        // Saves to browser AND automatically triggers cloud push
-        function saveLocalAndPush() {
-            localStorage.setItem('stealthTickers', JSON.stringify(myTickers));
-            renderApp();
-            autoPushToGist();
-        }
-
         // --- RENDER UI ---
         function renderApp() {
-            renderStealthList();
-            renderWidgets();
-        }
-
-        function renderStealthList() {
-            stealthListContainer.innerHTML = '';
-            getTickerChunks().forEach(chunk => {
-                const row = document.createElement('div');
-                row.className = 'stealth-row';
-                
-                chunk.forEach(data => {
-                    const item = document.createElement('div');
-                    item.className = 'invisible-item';
-                    item.draggable = true;
-                    if (data.item.startsWith('---')) {
-                        let name = data.item.replace('---', '').trim();
-                        item.innerText = name ? `--- ${name}` : '---';
-                        item.classList.add('separator-item');
-                    } else {
-                        item.innerText = data.item.split(':')[1] || data.item;
-                    }
-                    
-                    // Drag & Drop
-                    item.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', data.originalIndex); setTimeout(() => item.style.opacity = '0.4', 0); });
-                    item.addEventListener('dragend', () => { item.style.opacity = '1'; document.querySelectorAll('.invisible-item').forEach(el => el.classList.remove('drag-over')); });
-                    item.addEventListener('dragenter', (e) => { e.preventDefault(); item.classList.add('drag-over'); });
-                    item.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-                    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-                    item.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        item.classList.remove('drag-over');
-                        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                        const toIdx = data.originalIndex;
-                        if (fromIdx !== toIdx && !isNaN(fromIdx)) {
-                            const moved = myTickers.splice(fromIdx, 1)[0];
-                            myTickers.splice(toIdx, 0, moved);
-                            saveLocalAndPush(); // Auto-pushes reorders instantly
-                        }
-                    });
-
-                    // PC Double Click
-                    item.addEventListener('dblclick', () => {
-                        item.style.transform = 'scale(0.8)';
-                        item.style.opacity = '0';
-                        setTimeout(() => removeTicker(data.originalIndex), 200);
-                    });
-
-                    // Mobile Double Tap
-                    let lastTap = 0;
-                    item.addEventListener('touchend', (e) => {
-                        let currentTime = new Date().getTime();
-                        let tapLength = currentTime - lastTap;
-                        if (tapLength < 500 && tapLength > 0) { 
-                            item.style.transform = 'scale(0.8)';
-                            item.style.opacity = '0';
-                            setTimeout(() => removeTicker(data.originalIndex), 200);
-                            e.preventDefault(); 
-                        }
-                        lastTap = currentTime;
-                    });
-
-                    row.appendChild(item);
-                });
-                stealthListContainer.appendChild(row);
-            });
-        }
-
-        function renderWidgets() {
             dashboard.innerHTML = '';
+            
             getTickerChunks().forEach(chunk => {
-                const widgetDiv = document.createElement('div');
+                const card = document.createElement('div'); 
+                card.className = 'dashboard-card';
+
+                const widgetDiv = document.createElement('div'); 
                 widgetDiv.className = 'stealth-widget';
-                const containerDiv = document.createElement('div');
+                const containerDiv = document.createElement('div'); 
                 containerDiv.className = 'tradingview-widget-container';
-                const placeholder = document.createElement('div');
+                const placeholder = document.createElement('div'); 
                 placeholder.className = 'tradingview-widget-container__widget';
                 containerDiv.appendChild(placeholder);
 
                 let groups = [], currentSymbols = [], currentName = "", groupCounter = 1;
                 
-                chunk.forEach(data => {
-                    let item = data.item;
-                    if (item.startsWith('---')) {
-                        if (currentSymbols.length > 0) {
-                            groups.push({ "name": currentName, "symbols": currentSymbols });
-                            currentSymbols = [];
-                        } else if (currentName !== "") {
-                            groups.push({ "name": currentName, "symbols": [] });
-                        }
-                        let rawName = item.replace('---', '').trim();
+                chunk.forEach(item => {
+                    if (item.startsWith('===') || item.startsWith('---')) {
+                        if (currentSymbols.length > 0) { groups.push({ "name": currentName, "symbols": currentSymbols }); currentSymbols = []; } 
+                        else if (currentName !== "") { groups.push({ "name": currentName, "symbols": [] }); }
+                        let rawName = item.replace(/^[=-]+/, '').trim();
                         currentName = rawName !== "" ? rawName : ("\xA0" + "\u200B".repeat(groupCounter++));
-                    } else {
-                        currentSymbols.push({ "name": item });
-                    }
+                    } else { currentSymbols.push({ "name": item }); }
                 });
                 
-                if (currentSymbols.length > 0) {
-                    groups.push({ "name": currentName, "symbols": currentSymbols });
-                } else if (currentName !== "") {
-                    groups.push({ "name": currentName, "symbols": [] });
-                }
-                if (groups.length === 1 && groups[0].name !== "") {
-                    groups.push({ "name": "\u200B".repeat(groupCounter++), "symbols": [] });
-                }
+                if (currentSymbols.length > 0) groups.push({ "name": currentName, "symbols": currentSymbols });
+                else if (currentName !== "") groups.push({ "name": currentName, "symbols": [] });
+                if (groups.length === 1 && groups[0].name !== "") groups.push({ "name": "\u200B".repeat(groupCounter++), "symbols": [] });
 
-                let totalSymbols = 0;
-                groups.forEach(g => totalSymbols += g.symbols.length);
+                let totalSymbols = 0; groups.forEach(g => totalSymbols += g.symbols.length);
                 const dynamicHeight = (totalSymbols * 45 + groups.length * 40 + 65).toString();
 
                 const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
-                script.async = true;
-                script.innerHTML = JSON.stringify({
-                    "width": "100%",
-                    "height": dynamicHeight,
-                    "symbolsGroups": groups,
-                    "showSymbolLogo": false,
-                    "colorTheme": "dark",
-                    "isTransparent": true,
-                    "locale": "en"
-                });
+                script.type = 'text/javascript'; script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js'; script.async = true;
+                script.innerHTML = JSON.stringify({ "width": "100%", "height": dynamicHeight, "symbolsGroups": groups, "showSymbolLogo": false, "colorTheme": "dark", "isTransparent": true, "locale": "en" });
 
-                containerDiv.appendChild(script);
+                containerDiv.appendChild(script); 
                 widgetDiv.appendChild(containerDiv);
-                dashboard.appendChild(widgetDiv);
+                card.appendChild(widgetDiv); 
+                dashboard.appendChild(card);
             });
         }
         
-        // App Start
         window.onload = () => { 
-            applyColorMode(); // Apply saved color state immediately
-            if(myTickers.length === 0) {
-                myTickers = ["NASDAQ:AAPL", "NASDAQ:MSFT", "BINANCE:BTCUSDT"];
-            }
-            renderApp(); // Draw local first so it isn't blank
-            autoPullFromGist(); // Then grab cloud update immediately
+            applyColorMode(); 
+            if(myTickers.length === 0) myTickers = ["=== MAIN", "NASDAQ:AAPL", "NASDAQ:MSFT", "=== CRYPTO", "BINANCE:BTCUSDT"];
+            renderApp(); 
+            autoPullFromGist(); 
         };
     </script>
 </body>
