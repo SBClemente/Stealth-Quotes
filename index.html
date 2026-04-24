@@ -18,6 +18,7 @@
             margin: 0;
             padding: 20px;
             overflow-x: hidden;
+            transition: background-color 0.3s;
         }
 
         /* --- SYNC BAR --- */
@@ -135,14 +136,29 @@
         @media (min-width: 768px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1100px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
 
-        .stealth-widget { filter: grayscale(100%) contrast(1.2); opacity: 0.7; transition: 0.3s; min-width: 0; }
+        .stealth-widget { 
+            filter: grayscale(100%) contrast(1.2); 
+            opacity: 0.7; 
+            transition: all 0.3s ease; 
+            min-width: 0; 
+        }
         .stealth-widget:hover { opacity: 1; }
+
+        /* --- COLOR MODE TOGGLE --- */
+        body.color-mode .stealth-widget {
+            filter: grayscale(0%) contrast(1);
+            opacity: 1;
+        }
+        body.color-mode .invisible-item {
+            color: #666;
+        }
     </style>
 </head>
 <body>
 
     <div id="syncBar">
-        <button class="sync-btn" onclick="toggleSetup()">⚙ config</button>
+        <button class="sync-btn" onclick="toggleSetup()">⚙ CONFIG</button>
+        <button class="sync-btn" id="colorToggleBtn" onclick="toggleColors()">◑ COLOR</button>
         <span id="syncStatus" class="status-working">INITIALIZING...</span>
         
         <div id="setupPanel">
@@ -186,6 +202,26 @@
         const stealthListContainer = document.getElementById('stealthList');
         const inputField = document.getElementById('tickerInput');
         const suggestionsBox = document.getElementById('suggestions');
+
+        // --- COLOR MODE LOGIC ---
+        let isColorMode = localStorage.getItem('colorMode') === 'true';
+
+        function applyColorMode() {
+            const btn = document.getElementById('colorToggleBtn');
+            if (isColorMode) {
+                document.body.classList.add('color-mode');
+                if (btn) btn.innerText = '◑ STEALTH';
+            } else {
+                document.body.classList.remove('color-mode');
+                if (btn) btn.innerText = '◑ COLOR';
+            }
+        }
+
+        function toggleColors() {
+            isColorMode = !isColorMode;
+            localStorage.setItem('colorMode', isColorMode);
+            applyColorMode();
+        }
 
         // --- FULLY AUTOMATED SYNC CORE ---
         function setStatus(msg, className) {
@@ -499,6 +535,7 @@
         
         // App Start
         window.onload = () => { 
+            applyColorMode(); // Apply saved color state immediately
             if(myTickers.length === 0) {
                 myTickers = ["NASDAQ:AAPL", "NASDAQ:MSFT", "BINANCE:BTCUSDT"];
             }
