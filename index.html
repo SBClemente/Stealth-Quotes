@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=650">
+    <title>Stealth Quotes</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,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">
+    <style>
+        body {
+            background-color: #000000;
+            color: #555555;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- GIST SYNC BAR --- */
+        #syncBar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        #syncBar input {
+            width: auto;
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        #tokenInput  { width: 180px; letter-spacing: 1px; }
+        #gistIdInput { width: 200px; }
+
+        .sync-btn {
+            background: none;
+            border: 1px solid #333;
+            color: #555;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .sync-btn:hover { border-color: #777; color: #999; }
+        .sync-btn:disabled { opacity: 0.3; cursor: default; }
+
+        #syncStatus {
+            font-size: 10px;
+            color: #444;
+            min-width: 160px;
+            text-align: left;
+        }
+        #syncStatus.ok  { color: #4a7; }
+        #syncStatus.err { color: #a44; }
+        #syncStatus.working { color: #777; }
+
+        #toggleSetup {
+            background: none;
+            border: none;
+            color: #333;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 0;
+        }
+        #toggleSetup:hover { color: #666; }
+
+        #setupPanel {
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        #setupPanel.visible { display: flex; }
+
+        /* --- EXISTING STYLES (unchanged) --- */
+        .controls-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        input {
+            background-color: #111111;
+            border: 1px solid #333333;
+            color: #777;
+            padding: 12px;
+            width: 400px;
+            font-family: 'Courier New', Courier, monospace;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: #555; }
+
+        .autocomplete-wrapper {
+            display: inline-block;
+            position: relative;
+        }
+
+        #suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #0a0a0a;
+            border: 1px solid #222;
+            border-top: none;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            text-align: left;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.8);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #111;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .suggestion-item:hover { background-color: #1a1a1a; color: #999; }
+        .sugg-exchange { font-size: 10px; color: #444; }
+
+        #stealthList {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+            max-width: 100%;
+        }
+
+        .stealth-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #1a1a1a;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .stealth-row:last-child { border-bottom: none; }
+
+        .invisible-item {
+            color: #333; 
+            font-size: 12px;
+            cursor: grab;
+            user-select: none;
+            transition: color 0.2s, transform 0.2s ease, opacity 0.2s ease;
+            position: relative;
+            padding: 4px 8px;
+            border: 1px dashed transparent;
+        }
+
+        .invisible-item:active { cursor: grabbing; }
+        .invisible-item:hover { color: #777; }
+        
+        .separator-item {
+            color: #444;
+            font-weight: bold;
+            border-bottom: 1px solid #222;
+        }
+
+        .drag-over {
+            border-left: 2px solid #555;
+            opacity: 0.8;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1100px) {
+            .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .stealth-widget {
+            filter: grayscale(100%) contrast(1.2);
+            opacity: 0.7; 
+            transition: opacity 0.3s;
+            min-width: 0;
+        }
+
+        .stealth-widget:hover { opacity: 1.0; }
+        
+        #suggestions::-webkit-scrollbar { width: 4px; }
+        #suggestions::-webkit-scrollbar-thumb { background: #333; }
+    </style>
+</head>
+<body>
+
+    <!-- SYNC BAR -->
+    <div id="syncBar">
+        <button id="toggleSetup" onclick="toggleSetup()">⚙ gist sync</button>
+        <div id="setupPanel">
+            <input type="password" id="tokenInput"  placeholder="GitHub token (ghp_...)" autocomplete="off">
+            <input type="text"     id="gistIdInput" placeholder="Gist ID (leave blank = create new)" autocomplete="off">
+            <button class="sync-btn" onclick="saveCredentials()">save creds</button>
+        </div>
+        <button class="sync-btn" id="pushBtn" onclick="pushToGist()" title="Push your local list to Gist">↑ push</button>
+        <button class="sync-btn" id="pullBtn" onclick="pullFromGist()" title="Pull list from Gist">↓ pull</button>
+        <span id="syncStatus">—</span>
+    </div>
+
+    <div class="controls-container">
+        <div class="autocomplete-wrapper">
+            <input type="text" id="tickerInput" placeholder="Symbol, ---, or --- NAME" autocomplete="off">
+            <div id="suggestions"></div>
+        </div>
+        <p style="font-size: 10px; color: #333; margin-top: 10px;">Drag-and-Drop to reorder. Double-click (PC) or Double-tap (Mobile) to silently delete.</p>
+    </div>
+
+    <div id="stealthList"></div>
+    <div id="dashboard" class="dashboard-grid"></div>
+
+    <script>
+        // ─── INTERNAL TICKER DATABASE ───────────────────────────────────────────
+        const popularTickers = [
+            { symbol: "AAPL", exchange: "NASDAQ" }, { symbol: "MSFT", exchange: "NASDAQ" },
+            { symbol: "GOOGL", exchange: "NASDAQ" }, { symbol: "AMZN", exchange: "NASDAQ" },
+            { symbol: "NVDA", exchange: "NASDAQ" }, { symbol: "META", exchange: "NASDAQ" },
+            { symbol: "TSLA", exchange: "NASDAQ" }, { symbol: "NFLX", exchange: "NASDAQ" },
+            { symbol: "BRK.B", exchange: "NYSE" }, { symbol: "V", exchange: "NYSE" },
+            { symbol: "JPM", exchange: "NYSE" }, { symbol: "WMT", exchange: "NYSE" },
+            { symbol: "BTCUSDT", exchange: "BINANCE" }, { symbol: "ETHUSDT", exchange: "BINANCE" },
+            { symbol: "SOLUSDT", exchange: "BINANCE" }, { symbol: "XRPUSDT", exchange: "BINANCE" },
+            { symbol: "ES1!", exchange: "CME_MINI" }, { symbol: "NQ1!", exchange: "CME_MINI" },
+            { symbol: "GC1!", exchange: "COMEX" }, { symbol: "CL1!", exchange: "NYMEX" },
+            { symbol: "EURUSD", exchange: "FX" }, { symbol: "GBPUSD", exchange: "FX" }
+        ];
+
+        const dashboard             = document.getElementById('dashboard');
+        const stealthListContainer  = document.getElementById('stealthList');
+        const inputField            = document.getElementById('tickerInput');
+        const suggestionsBox        = document.getElementById('suggestions');
+
+        let myTickers = JSON.parse(localStorage.getItem('stealthTickers')) || [
+            "NASDAQ:AAPL", "NASDAQ:MSFT", "BINANCE:BTCUSDT"
+        ];
+
+        // ─── GIST SYNC ──────────────────────────────────────────────────────────
+        const GIST_FILENAME = 'tickers.json';
+
+        function getCredentials() {
+            return {
+                token:  localStorage.getItem('gistToken')  || '',
+                gistId: localStorage.getItem('gistId')     || ''
+            };
+        }
+
+        function setStatus(msg, type = '') {
+            const el = document.getElementById('syncStatus');
+            el.textContent = msg;
+            el.className = type;
+        }
+
+        function toggleSetup() {
+            const panel = document.getElementById('setupPanel');
+            panel.classList.toggle('visible');
+            if (panel.classList.contains('visible')) {
+                const { token, gistId } = getCredentials();
+                document.getElementById('tokenInput').value  = token;
+                document.getElementById('gistIdInput').value = gistId;
+            }
+        }
+
+        function saveCredentials() {
+            const token  = document.getElementById('tokenInput').value.trim();
+            const gistId = document.getElementById('gistIdInput').value.trim();
+            if (!token) { setStatus('token required', 'err'); return; }
+            localStorage.setItem('gistToken', token);
+            localStorage.setItem('gistId', gistId);
+            document.getElementById('setupPanel').classList.remove('visible');
+            setStatus('credentials saved', 'ok');
+            // Auto-pull if we now have a gistId
+            if (gistId) pullFromGist();
+        }
+
+        async function pushToGist() {
+            const { token, gistId } = getCredentials();
+            if (!token) { toggleSetup(); setStatus('enter token first', 'err'); return; }
+
+            setStatus('pushing...', 'working');
+            document.getElementById('pushBtn').disabled = true;
+
+            const content = JSON.stringify(myTickers);
+            try {
+                let res, data;
+                if (gistId) {
+                    // Update existing Gist
+                    res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ files: { [GIST_FILENAME]: { content } } })
+                    });
+                } else {
+                    // Create new Gist on first push
+                    res = await fetch('https://api.github.com/gists', {
+                        method: 'POST',
+                        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            description: 'Stealth Tickers Sync',
+                            public: false,
+                            files: { [GIST_FILENAME]: { content } }
+                        })
+                    });
+                    data = await res.json();
+                    localStorage.setItem('gistId', data.id);
+                    document.getElementById('gistIdInput').value = data.id;
+                }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const now = new Date().toLocaleTimeString();
+                setStatus(`✓ pushed at ${now}`, 'ok');
+            } catch (e) {
+                setStatus(`push failed: ${e.message}`, 'err');
+            } finally {
+                document.getElementById('pushBtn').disabled = false;
+            }
+        }
+
+        async function pullFromGist() {
+            const { token, gistId } = getCredentials();
+            if (!token || !gistId) { 
+                if (!token) { toggleSetup(); setStatus('enter token first', 'err'); }
+                else setStatus('no Gist ID — push first', 'err');
+                return;
+            }
+
+            setStatus('pulling...', 'working');
+            document.getElementById('pullBtn').disabled = true;
+
+            try {
+                const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                const raw = data.files[GIST_FILENAME]?.content;
+                if (!raw) throw new Error('file not found in Gist');
+                const fetched = JSON.parse(raw);
+                if (!Array.isArray(fetched)) throw new Error('invalid format');
+                myTickers = fetched;
+                localStorage.setItem('stealthTickers', JSON.stringify(myTickers));
+                renderApp();
+                const now = new Date().toLocaleTimeString();
+                setStatus(`✓ pulled at ${now}`, 'ok');
+            } catch (e) {
+                setStatus(`pull failed: ${e.message}`, 'err');
+            } finally {
+                document.getElementById('pullBtn').disabled = false;
+            }
+        }
+
+        // Auto-pull on load if credentials are set
+        window.addEventListener('load', () => {
+            const { token, gistId } = getCredentials();
+            if (token && gistId) pullFromGist();
+        });
+
+        // ─── CHUNKING ────────────────────────────────────────────────────────────
+        function getTickerChunks() {
+            let chunks = [];
+            let currentChunk = [];
+
+            myTickers.forEach((item, index) => {
+                currentChunk.push({ item: item, originalIndex: index });
+                let symbolCount = currentChunk.filter(i => !i.item.startsWith('---')).length;
+                if (symbolCount >= 15) {
+                    chunks.push(currentChunk);
+                    currentChunk = [];
+                }
+            });
+            if (currentChunk.length > 0) chunks.push(currentChunk);
+            return chunks;
+        }
+
+        // ─── AUTOCOMPLETE ────────────────────────────────────────────────────────
+        inputField.addEventListener('input', function() {
+            const query = this.value.toUpperCase();
+            suggestionsBox.innerHTML = '';
+            
+            if (!query || query.startsWith('---')) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            const matches = popularTickers.filter(t => t.symbol.includes(query) || t.exchange.includes(query));
+            
+            if (matches.length > 0) {
+                suggestionsBox.style.display = 'block';
+                matches.forEach(match => {
+                    const fullTicker = `${match.exchange}:${match.symbol}`;
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `<span>${match.symbol}</span> <span class="sugg-exchange">${match.exchange}</span>`;
+                    div.onclick = function() {
+                        addTicker(fullTicker);
+                        suggestionsBox.style.display = 'none';
+                        inputField.value = '';
+                    };
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.style.display = 'block';
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `<span>Add manually:</span> <span class="sugg-exchange">${query}</span>`;
+                div.onclick = function() {
+                    addTicker(query);
+                    suggestionsBox.style.display = 'none';
+                    inputField.value = '';
+                };
+                suggestionsBox.appendChild(div);
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if(e.target !== inputField && e.target !== suggestionsBox) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        inputField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim().toUpperCase();
+                if (query) {
+                    addTicker(query);
+                    suggestionsBox.style.display = 'none';
+                    inputField.value = '';
+                }
+            }
+        });
+
+        // ─── TICKER MANAGEMENT ───────────────────────────────────────────────────
+        function addTicker(tickerString) {
+            if (tickerString.startsWith('---')) {
+                myTickers.push(tickerString);
+                saveState();
+                return;
+            }
+            if (!tickerString.includes(':')) {
+                const found = popularTickers.find(t => t.symbol === tickerString);
+                if (found) tickerString = `${found.exchange}:${found.symbol}`;
+            }
+            myTickers.push(tickerString);
+            saveState();
+        }
+
+        function removeTicker(indexToRemove) {
+            myTickers.splice(indexToRemove, 1);
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem('stealthTickers', JSON.stringify(myTickers));
+            renderApp();
+        }
+
+        // ─── RENDER ──────────────────────────────────────────────────────────────
+        function renderApp() {
+            renderStealthList();
+            renderWidgets();
+        }
+
+        function renderStealthList() {
+            stealthListContainer.innerHTML = '';
+            const chunks = getTickerChunks();
+
+            chunks.forEach((chunk) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'stealth-row';
+
+                chunk.forEach((data) => {
+                    const ticker = data.item;
+                    const index  = data.originalIndex;
+                    const item   = document.createElement('div');
+                    item.className  = 'invisible-item';
+                    item.draggable  = true; 
+                    
+                    if (ticker.startsWith('---')) {
+                        let name = ticker.replace('---', '').trim();
+                        item.innerText = name ? `--- ${name}` : '---';
+                        item.classList.add('separator-item');
+                    } else {
+                        item.innerText = ticker.split(':')[1] || ticker; 
+                    }
+
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', index);
+                        setTimeout(() => item.style.opacity = '0.4', 0);
+                    });
+                    item.addEventListener('dragend', () => {
+                        item.style.opacity = '1';
+                        document.querySelectorAll('.invisible-item').forEach(el => el.classList.remove('drag-over'));
+                    });
+                    item.addEventListener('dragenter', (e) => { e.preventDefault(); item.classList.add('drag-over'); });
+                    item.addEventListener('dragover',  (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+                    item.addEventListener('dragleave', ()  => { item.classList.remove('drag-over'); });
+                    item.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        item.classList.remove('drag-over');
+                        const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                        const targetIndex  = index;
+                        if (draggedIndex !== targetIndex && !isNaN(draggedIndex)) {
+                            const draggedItem = myTickers.splice(draggedIndex, 1)[0];
+                            myTickers.splice(targetIndex, 0, draggedItem);
+                            saveState(); 
+                        }
+                    });
+                    item.addEventListener('dblclick', () => {
+                        item.style.transform = 'scale(0.8)';
+                        item.style.opacity   = '0';
+                        setTimeout(() => removeTicker(index), 200);
+                    });
+
+                    let lastTap = 0;
+                    item.addEventListener('touchend', (e) => {
+                        let currentTime = new Date().getTime();
+                        let tapLength   = currentTime - lastTap;
+                        if (tapLength < 500 && tapLength > 0) { 
+                            item.style.transform = 'scale(0.8)';
+                            item.style.opacity   = '0';
+                            setTimeout(() => removeTicker(index), 200);
+                            e.preventDefault(); 
+                        }
+                        lastTap = currentTime;
+                    });
+
+                    rowDiv.appendChild(item);
+                });
+
+                stealthListContainer.appendChild(rowDiv);
+            });
+        }
+
+        function renderWidgets() {
+            dashboard.innerHTML = ''; 
+            if (myTickers.length === 0) return;
+            const chunks = getTickerChunks();
+            chunks.forEach(chunkObjects => {
+                createWidgetBlock(chunkObjects.map(obj => obj.item));
+            });
+        }
+
+        function createWidgetBlock(tickersChunk) {
+            const widgetDiv    = document.createElement('div');
+            widgetDiv.className = 'stealth-widget';
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'tradingview-widget-container';
+            const placeholder  = document.createElement('div');
+            placeholder.className = 'tradingview-widget-container__widget';
+            containerDiv.appendChild(placeholder);
+
+            const script  = document.createElement('script');
+            script.type   = 'text/javascript';
+            script.src    = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
+            script.async  = true;
+
+            let groups = [], currentGroupName = "", currentSymbols = [], groupCounter = 1;
+
+            tickersChunk.forEach(item => {
+                if (item.startsWith('---')) {
+                    if (currentSymbols.length > 0) {
+                        groups.push({ "name": currentGroupName, "symbols": currentSymbols });
+                        currentSymbols = [];
+                    } else if (currentGroupName !== "") {
+                        groups.push({ "name": currentGroupName, "symbols": [] });
+                    }
+                    let rawName = item.replace('---', '').trim();
+                    currentGroupName = rawName !== "" ? rawName : ("\xA0" + "\u200B".repeat(groupCounter++));
+                } else {
+                    currentSymbols.push({ "name": item });
+                }
+            });
+            
+            if (currentSymbols.length > 0) {
+                groups.push({ "name": currentGroupName, "symbols": currentSymbols });
+            } else if (currentGroupName !== "") {
+                groups.push({ "name": currentGroupName, "symbols": [] });
+            }
+            if (groups.length === 1 && groups[0].name !== "") {
+                groups.push({ "name": "\u200B".repeat(groupCounter++), "symbols": [] });
+            }
+
+            let totalSymbols = 0;
+            groups.forEach(g => totalSymbols += g.symbols.length);
+            const dynamicHeight = (totalSymbols * 45 + groups.length * 40 + 65).toString();
+
+            script.innerHTML = JSON.stringify({
+                "width": "100%",
+                "height": dynamicHeight,
+                "symbolsGroups": groups,
+                "showSymbolLogo": false,
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "locale": "en"
+            });
+
+            containerDiv.appendChild(script);
+            widgetDiv.appendChild(containerDiv);
+            dashboard.appendChild(widgetDiv);
+        }
+
+        renderApp();
+    </script>
+</body>
+</html>
