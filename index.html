@@ -612,7 +612,7 @@ function buildBottomBar(colIndex, activeTabName) {
             <span class="sugg-exchange">${exchange}</span>
         `;
         div.onclick = () => {
-            insertItemsIntoTab(activeTabName, [fullTicker], true);
+            insertItemsIntoTab(columnsState[colIndex], [fullTicker], true);
             suggBox.style.display = 'none'; inputEl.value = '';
         };
         return div;
@@ -622,7 +622,7 @@ function buildBottomBar(colIndex, activeTabName) {
         const div = document.createElement('div');
         div.className = 'suggestion-item';
         div.innerHTML = `<div class="sugg-text-col"><span class="sugg-symbol">Add manually:</span></div><span class="sugg-exchange">${query}</span>`;
-        div.onclick = () => { insertItemsIntoTab(activeTabName, [query], true); suggBox.style.display = 'none'; inputEl.value = ''; };
+        div.onclick = () => { insertItemsIntoTab(columnsState[colIndex], [query], true); suggBox.style.display = 'none'; inputEl.value = ''; };
         return div;
     }
 
@@ -654,7 +654,7 @@ function buildBottomBar(colIndex, activeTabName) {
 
     inputEl.addEventListener('keypress', e => {
         if (e.key === 'Enter' && inputEl.value.trim()) {
-            insertItemsIntoTab(activeTabName, [inputEl.value.trim().toUpperCase()], true);
+            insertItemsIntoTab(columnsState[colIndex], [inputEl.value.trim().toUpperCase()], true);
             inputEl.value = ''; suggBox.style.display = 'none';
         }
     });
@@ -666,7 +666,7 @@ function buildBottomBar(colIndex, activeTabName) {
     importWrap.innerHTML = '<span>Or</span>';
     const batchBtn = document.createElement('button');
     batchBtn.className = 'bottom-btn'; batchBtn.innerText = 'Batch Import';
-    batchBtn.onclick = () => openTabEditor(activeTabName);
+    batchBtn.onclick = () => openTabEditor(columnsState[colIndex]);
     importWrap.appendChild(batchBtn);
 
     inputWrap.appendChild(inputEl); inputWrap.appendChild(suggBox);
