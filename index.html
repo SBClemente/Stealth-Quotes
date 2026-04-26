@@ -4,812 +4,1356 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Stealth Monitor</title>
+    
     <link rel="icon" type="image/x-icon" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
+    <link rel="apple-touch-icon" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="hidden-eye-icon-diagonal-line-for-eye-vector.ico">
+
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body { background-color: #000; color: #555; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        /* ─────────────────────────────────────────────
+           BASE
+        ───────────────────────────────────────────── */
+        body {
+            background: #000;
+            color: #555;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
 
-        #syncBar { display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding: 12px 15px; background-color: rgba(0,0,0,0.95); border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 8000; flex-wrap: wrap; }
-        .sync-btn { background: #050505; border: 1px solid #333; color: #666; font-family: 'Courier New', monospace; font-size: 11px; padding: 8px 12px; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; display: flex; align-items: center; justify-content: center; }
+        /* ─────────────────────────────────────────────
+           TOP BAR
+        ───────────────────────────────────────────── */
+        #syncBar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.95);
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 8000;
+            flex-wrap: wrap;
+        }
+
+        .sync-btn {
+            background: #050505;
+            border: 1px solid #333;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
         .sync-btn:hover { border-color: #888; color: #aaa; background: #111; }
+        
+        /* Subtle grey outline for Active Header Buttons */
+        .sync-btn.active { border-color: #666 !important; color: #ccc; }
+        
         .sync-btn.highlight { border-color: #aaa; color: #aaa; }
-        #syncStatus { font-size: 10px; letter-spacing: 1px; padding: 4px 10px; border-radius: 2px; text-transform: uppercase; margin-left: 10px; }
-        .status-ok { color: #4a7; } .status-err { color: #f44; font-weight: bold; } .status-working { color: #888; }
 
-        #setupPanel { display: none; gap: 8px; width: 100%; justify-content: flex-start; padding-top: 10px; margin-top: 5px; border-top: 1px dashed #333; flex-wrap: wrap; }
+        #syncStatus {
+            font-size: 10px;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+        .status-ok      { color: #4a7; }
+        .status-err     { color: #f44; font-weight: bold; }
+        .status-working { color: #888; }
+
+        /* ─────────────────────────────────────────────
+           CONFIG PANEL (expands under top bar)
+        ───────────────────────────────────────────── */
+        #setupPanel {
+            display: none;
+            gap: 8px;
+            width: 100%;
+            justify-content: flex-start;
+            padding-top: 10px;
+            margin-top: 5px;
+            border-top: 1px dashed #333;
+            flex-wrap: wrap;
+        }
         #setupPanel.visible { display: flex; }
-        #setupPanel input { background: #111; border: 1px solid #333; color: #777; width: 220px; padding: 6px; font-size: 10px; font-family: 'Courier New', monospace; outline: none; }
-        #setupPanel .cred-note { color: #555; font-size: 9px; align-self: center; }
+        #setupPanel input {
+            background: #111;
+            border: 1px solid #333;
+            color: #777;
+            width: 200px;
+            padding: 6px;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            box-sizing: border-box;
+        }
 
-        #workspaceWrapper { width: 100%; padding: 15px; overflow-x: auto; padding-bottom: 0; }
-        #workspaceWrapper::-webkit-scrollbar { height: 6px; } #workspaceWrapper::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        #workspace { display: flex; gap: 20px; align-items: flex-start; justify-content: flex-start; min-width: max-content; }
+        /* ─────────────────────────────────────────────
+           WORKSPACE AREA
+        ───────────────────────────────────────────── */
+        #workspaceWrapper {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            overflow-x: auto;
+            height: calc(100vh - 80px);
+        }
+        #workspaceWrapper::-webkit-scrollbar        { height: 6px; }
+        #workspaceWrapper::-webkit-scrollbar-thumb  { background: #333; border-radius: 3px; }
 
-        .column-container { width: calc(25vw - 25px); min-width: 440px; flex-shrink: 0; display: flex; flex-direction: column; border: 1px solid #333; background-color: #000; }
-        .col-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background-color: #111; border-bottom: 1px solid #222; }
-        .col-title { color: #ccc; font-size: 12px; font-weight: bold; }
+        #workspace {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-width: max-content;
+            height: 100%;
+        }
+
+        /* ─────────────────────────────────────────────
+           COLUMNS
+        ───────────────────────────────────────────── */
+        .column-container {
+            width: calc(25vw - 25px);
+            min-width: 440px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #333;
+            background: #000;
+            box-sizing: border-box;
+            height: 100%;
+            transition: border-color 0.1s;
+        }
+
+        /* Subtle grey outline for Focused Column */
+        .column-container.active-col {
+            border-color: #666 !important;
+        }
+
+        .col-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #111;
+            border-bottom: 1px solid #222;
+            flex-shrink: 0;
+            cursor: grab;
+            transition: background-color 0.2s;
+        }
+        .col-header:active { cursor: grabbing; }
+
+        .col-title {
+            color: #ccc;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none; 
+        }
         .col-header-icons { display: flex; gap: 8px; align-items: center; }
-        .col-header-icons button { background: transparent; border: none; color: #666; cursor: pointer; font-size: 14px; padding: 0 4px; transition: color .15s; font-family: 'Courier New', monospace; font-weight: bold; }
+        .col-header-icons button {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+            transition: color 0.15s;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
         .col-header-icons button:hover { color: #aaa; }
 
-        .tabBar { display: flex; overflow-x: auto; border-bottom: 1px solid #222; background-color: #050505; align-items: center; padding: 0 5px; }
-        .tabBar::-webkit-scrollbar { height: 0; }
-        .tab-btn { background: transparent; color: #777; border: none; padding: 8px 12px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 11px; white-space: nowrap; transition: background-color .15s, color .15s; outline: none; display: flex; align-items: center; gap: 5px; border-bottom: none; }
+        /* ─────────────────────────────────────────────
+           TABS
+        ───────────────────────────────────────────── */
+        .tabBar {
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid #222;
+            background: #050505;
+            align-items: center;
+            padding: 0 5px;
+            flex-shrink: 0;
+        }
+        .tabBar::-webkit-scrollbar { height: 0px; } 
+
+        .tab-btn {
+            background: transparent;
+            color: #777;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            white-space: nowrap;
+            transition: background-color 0.15s, color 0.15s;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-sizing: border-box;
+            border-bottom: none;
+        }
         .tab-btn:hover { color: #aaa; background: #111; }
-        .tab-btn.active { color: #fff; background-color: #1a1a1a; box-shadow: inset 0 0 0 1px #333, inset 0 -1px 0 0 #1a1a1a; }
-        .tab-move-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 10px; padding: 0 2px; transition: color .15s; }
+        
+        /* Subtle grey outline for Active Watchlist Tabs */
+        .tab-btn.active { 
+            color: #ccc; 
+            background: #1a1a1a; 
+            box-shadow: inset 0 0 0 1px #666; 
+        }
+
+        .tab-move-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 10px;
+            padding: 0 2px;
+            transition: color 0.15s;
+        }
         .tab-move-btn:hover { color: #aaa; }
-        .tab-del-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 12px; padding: 0 2px; margin-left: 4px; font-weight: bold; transition: color .15s; }
+
+        .tab-del-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0 2px;
+            margin-left: 4px;
+            font-weight: bold;
+            transition: color 0.15s;
+        }
         .tab-del-btn:hover { color: #aaa; }
+
         .tab-controls { display: flex; margin-left: auto; align-items: center; }
-        .icon-btn { background: transparent; border: none; color: #666; cursor: pointer; font-family: 'Courier New', monospace; font-size: 14px; padding: 8px; transition: color .15s; font-weight: bold; }
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 8px;
+            transition: color 0.15s;
+            font-weight: bold;
+        }
         .icon-btn:hover { color: #aaa; }
-        .inline-tab-input { background: transparent; color: #aaa; border: none; border-bottom: 1px solid #555; font-family: 'Courier New', monospace; font-size: 11px; width: 80px; outline: none; padding: 4px; margin: 0 5px; display: none; }
+        
+        .inline-tab-input {
+            background: transparent;
+            color: #aaa;
+            border: none;
+            border-bottom: 1px solid #555;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            width: 80px;
+            outline: none;
+            padding: 4px;
+            margin: 0 5px;
+            display: none;
+        }
 
-        /* Widget layers — only active is visible; inactive sits hidden so TV iframe stays alive */
-        .widgetStack { position: relative; min-height: 200px; width: 100%; background-color: #050505; }
-        .widgetLayer { position: absolute; top: 0; left: 0; width: 100%; display: none; }
-        .widgetLayer.active { position: relative; display: block; }
-        .stealth-widget { will-change: filter; filter: grayscale(100%) contrast(1.2); opacity: 0.7; transition: filter .25s, opacity .25s; width: 100%; }
+        /* ─────────────────────────────────────────────
+           WIDGET STACK
+        ───────────────────────────────────────────── */
+        .widgetStack {
+            flex-grow: 1;
+            width: 100%;
+            background: #050505;
+            position: relative;
+            overflow: hidden;
+        }
+        .widgetLayer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+        }
+        .widgetLayer.active { display: block; }
+
+        .stealth-widget, .tradingview-widget-container, .tradingview-widget-container__widget { height: 100%; width: 100%; }
+        
+        .stealth-widget { filter: grayscale(100%) contrast(1.2); opacity: 0.7; transition: filter 0.3s, opacity 0.3s; }
         .stealth-widget:hover { opacity: 1; }
-        body.color-mode .stealth-widget { filter: none; opacity: 1; }
+        body.color-mode .stealth-widget { filter: grayscale(0%) contrast(1); opacity: 1; }
 
-        .bottomInputBar { display: flex; border-top: 1px solid #222; background-color: #0a0a0a; padding: 4px 8px; align-items: center; position: relative; }
-        .colTickerInput { flex-grow: 1; background: transparent; border: none; color: #777; font-family: 'Courier New', monospace; font-size: 11px; outline: none; padding: 6px 8px; }
+        /* ─────────────────────────────────────────────
+           BOTTOM INPUT BAR
+        ───────────────────────────────────────────── */
+        .bottomInputBar {
+            display: flex;
+            border-top: 1px solid #222;
+            background: #0a0a0a;
+            padding: 4px 8px;
+            align-items: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .colTickerInput {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #777;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            outline: none;
+            padding: 6px 8px;
+        }
+        .colTickerInput::placeholder { color: #555; }
         .import-wrapper { display: flex; align-items: center; gap: 8px; border-left: 1px solid #333; padding-left: 8px; }
         .import-wrapper span { color: #555; font-size: 10px; }
-        .bottom-btn { background: transparent; border: 1px solid #333; color: #888; font-family: 'Courier New', monospace; font-size: 10px; padding: 4px 8px; cursor: pointer; transition: background-color .15s, color .15s, border-color .15s; }
+        .bottom-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+        }
         .bottom-btn:hover { color: #ccc; border-color: #666; }
 
-        .suggestions-box { position: absolute; bottom: 100%; left: 0; right: 0; background-color: #0a0a0a; border: 1px solid #333; border-bottom: none; max-height: 250px; overflow-y: auto; z-index: 1000; display: none; text-align: left; box-shadow: 0 -5px 15px rgba(0,0,0,.9); }
+        /* ─────────────────────────────────────────────
+           LIVE SYMBOL SEARCH DROPDOWN
+        ───────────────────────────────────────────── */
+        .suggestions-box {
+            position: absolute;
+            bottom: 100%; left: 0; right: 0;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-bottom: none;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            text-align: left;
+            box-shadow: 0px -5px 15px rgba(0,0,0,0.9);
+        }
         .suggestions-box::-webkit-scrollbar { width: 4px; } .suggestions-box::-webkit-scrollbar-thumb { background: #444; }
-        .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; transition: background-color .15s; }
-        .suggestion-item:hover { background-color: #1a1a1a; }
+        
+        .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.15s; }
+        .suggestion-item:hover { background: #1a1a1a; }
         .sugg-text-col { display: flex; flex-direction: column; }
         .sugg-symbol { color: #ccc; font-weight: bold; font-size: 11px; }
         .sugg-name { color: #666; font-size: 9px; margin-top: 2px; }
         .sugg-exchange { font-size: 9px; color: #555; font-weight: bold; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,.3); z-index: 9000; flex-direction: column; align-items: center; justify-content: center; }
+        /* ─────────────────────────────────────────────
+           MODALS
+        ───────────────────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); z-index: 9000; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; }
         .modal-overlay.visible { display: flex; }
-        .editor-content { background: rgba(5,5,5,.92); border: 1px solid #444; padding: 20px; width: 95%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+        .editor-content { background: rgba(5,5,5,0.85); border: 1px solid #444; padding: 20px; width: 95%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.95); }
         .editor-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #444; padding-bottom: 10px; margin-bottom: 10px; }
-        .editor-header span { color: #aaa; font-weight: bold; font-size: 12px; }
-        textarea.stealth-textarea { background-color: rgba(0,0,0,.6); color: #fff; border: 1px solid #555; width: 100%; height: 350px; font-family: 'Courier New', monospace; padding: 15px; outline: none; resize: vertical; line-height: 1.5; font-size: 13px; transition: border-color .15s; }
-        textarea.stealth-textarea:focus { border-color: #888; }
+        .editor-header span { color: #aaa; font-weight: bold; font-size: 12px; display: flex; align-items: center; }
+        textarea.stealth-textarea { background: rgba(0,0,0,0.5); color: #ccc; border: 1px solid #333; width: 100%; height: 350px; font-family: 'Courier New', monospace; padding: 15px; outline: none; resize: vertical; line-height: 1.5; box-sizing: border-box; font-size: 12px; transition: border-color 0.15s; }
+        textarea.stealth-textarea:focus { border-color: #555; }
         .editor-actions { display: flex; justify-content: space-between; margin-top: 10px; }
 
+        /* ─────────────────────────────────────────────
+           FIXED WORKSPACE FOOTER
+        ───────────────────────────────────────────── */
+        #footerBar { position: fixed; bottom: 0; left: 0; width: 100%; height: 30px; background: #050505; border-top: 1px solid #222; display: flex; align-items: center; z-index: 8000; }
+        #wsTabsContainer { display: flex; height: 100%; overflow-x: auto; flex-grow: 1;}
+        #wsTabsContainer::-webkit-scrollbar { height: 0px; } 
+        
+        .ws-btn { background: transparent; color: #777; border: none; height: 100%; padding: 0 15px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 11px; transition: color 0.15s; border-right: 1px solid #222; display: flex; align-items: center; gap: 5px; outline: none;}
+        .ws-btn:hover { color: #aaa; background: #0a0a0a; }
+        
+        /* Subtle grey outline for Active Footer Tabs */
+        .ws-btn.active { 
+            color: #ccc; 
+            background: #111; 
+            font-weight: bold; 
+            box-shadow: inset 0 0 0 1px #666; 
+            border-right-color: transparent; 
+        }
+
+        .ws-del-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 12px; padding: 0 2px; font-weight: bold; margin-left: 5px;}
+        .ws-del-btn:hover { color: #aaa; }
+        
         @media (max-width: 768px) {
             #workspace { flex-direction: column; min-width: 100%; }
             .column-container { width: 100%; flex-shrink: 1; margin-bottom: 20px; min-width: 0; }
-            #workspaceWrapper { padding: 10px; }
+            #workspaceWrapper { padding: 10px; height: calc(100vh - 120px);}
         }
     </style>
 </head>
 <body>
 
-<div id="syncBar">
-    <button class="sync-btn" id="colorToggleBtn" onclick="toggleColors()">◑ COLOR</button>
-    <button class="sync-btn" onclick="toggleJournal()">⊟ NOTES</button>
-    <button class="sync-btn" onclick="openMasterEditor()">▤ MASTER BULK</button>
-    <button class="sync-btn" onclick="toggleSetup()">⚙ CONFIG</button>
-    <span id="syncStatus" class="status-working">INITIALIZING...</span>
-
-    <div id="setupPanel">
-        <input type="password" id="tokenInput" placeholder="GitHub Token (needs 'gist' scope)" autocomplete="off">
-        <input type="text" id="gistIdInput" placeholder="Gist ID (auto-fills on first save)" autocomplete="off">
-        <button class="sync-btn highlight" onclick="saveCredentials()">CONNECT</button>
-        <button class="sync-btn" onclick="clearCredentials()" style="border-color:#622; color:#966;">CLEAR</button>
-        <span class="cred-note">★ Credentials persist — open CONFIG only to change them</span>
-    </div>
-</div>
-
-<div id="workspaceWrapper">
-    <div id="workspace"></div>
-</div>
-
-<!-- Tab Editor Modal -->
-<div id="tabEditorModal" class="modal-overlay">
-    <div class="editor-content">
-        <div class="editor-header">
-            <span id="tabEditorTitle">BATCH IMPORT</span>
-            <span style="font-size:10px;color:#aaa;">Use --- GroupName for dividers</span>
-        </div>
-        <textarea id="tabEditor" class="stealth-textarea" spellcheck="false"></textarea>
-        <div class="editor-actions">
-            <button class="bottom-btn" onclick="closeTabEditor()">[×] CANCEL</button>
-            <button class="bottom-btn" style="border-color:#555;color:#ccc;" onclick="saveTabEdit()">[+] SAVE TAB</button>
+    <div id="syncBar">
+        <button class="sync-btn" id="colorToggleBtn" onclick="toggleColors()">◑ COLOR</button>
+        <button class="sync-btn" id="notesToggleBtn" onclick="toggleJournal()">⊟ NOTES</button>
+        <button class="sync-btn" id="masterToggleBtn" onclick="openMasterEditor()">▤ MASTER BULK</button>
+        <button class="sync-btn" id="configToggleBtn" onclick="toggleSetup()">⚙ CONFIG</button>
+        <span id="syncStatus" class="status-working">INITIALIZING...</span>
+        
+        <div id="setupPanel">
+            <input type="password" id="tokenInput" placeholder="Token (Needs 'gist' checked)" autocomplete="off">
+            <input type="text" id="gistIdInput" placeholder="ID (Auto-fills on save)" autocomplete="off">
+            <button class="sync-btn highlight" onclick="saveCredentials()">CONNECT</button>
+            <button class="sync-btn" onclick="clearCredentials()" style="border-color:#622; color:#966;">CLEAR</button>
         </div>
     </div>
-</div>
 
-<!-- Master Editor Modal -->
-<div id="masterEditorModal" class="modal-overlay">
-    <div class="editor-content">
-        <div class="editor-header">
-            <span>MASTER RAW EDIT (ALL TABS)</span>
-            <span style="font-size:10px;color:#aaa;">Use === TabName for new tabs</span>
-        </div>
-        <textarea id="masterEditor" class="stealth-textarea" spellcheck="false"></textarea>
-        <div class="editor-actions">
-            <button class="bottom-btn" onclick="closeMasterEditor()">[×] CANCEL</button>
-            <button class="bottom-btn" style="border-color:#555;color:#ccc;" onclick="saveMasterEdit()">[+] OVERWRITE ALL</button>
+    <div id="workspaceWrapper">
+        <div id="workspace"></div>
+    </div>
+
+    <div id="footerBar">
+        <div id="wsTabsContainer"></div>
+        <input type="text" id="wsInput" class="inline-tab-input" style="height: 100%; margin: 0 5px;" placeholder="Workspace Name...">
+        <button class="icon-btn" id="addWsBtn" onclick="showAddWs()" style="height: 100%; border-left: 1px solid #222; padding: 0 15px;">[+]</button>
+    </div>
+
+    <div id="tabEditorModal" class="modal-overlay">
+        <div class="editor-content">
+            <div class="editor-header">
+                <span id="tabEditorTitle">BATCH IMPORT</span>
+                <span style="font-size: 10px; color: #777;">Use --- GroupName for dividers</span>
+            </div>
+            <textarea id="tabEditor" class="stealth-textarea" spellcheck="false"></textarea>
+            <div class="editor-actions">
+                <button class="bottom-btn" onclick="closeTabEditor()">[×] CANCEL</button>
+                <button class="bottom-btn" style="border-color: #555; color: #ccc;" onclick="saveTabEdit()">[+] SAVE TAB</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Journal Modal -->
-<div id="journalModal" class="modal-overlay">
-    <div class="editor-content" style="height:auto;">
-        <div class="editor-header">
-            <span>--- SECURE LOGS</span>
-            <button class="icon-btn" onclick="toggleJournal()" style="padding:0;border:none;margin:0;">[×]</button>
+    <div id="masterEditorModal" class="modal-overlay">
+        <div class="editor-content">
+            <div class="editor-header">
+                <span>MASTER RAW EDIT (ALL TABS)</span>
+                <span style="font-size: 10px; color: #777;">Use === TabName for new tabs</span>
+            </div>
+            <textarea id="masterEditor" class="stealth-textarea" spellcheck="false"></textarea>
+            <div class="editor-actions">
+                <button class="bottom-btn" onclick="closeMasterEditor()">[×] CANCEL</button>
+                <button class="bottom-btn" style="border-color: #555; color: #ccc;" onclick="saveMasterEdit()">[+] OVERWRITE ALL</button>
+            </div>
         </div>
-        <textarea id="stealthJournal" class="stealth-textarea" style="height:250px;" placeholder="Log ideas or structural calculations here..."></textarea>
     </div>
-</div>
 
-<script>
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let myTickers = [];
-let myJournal = "";
-let columnsState = ["MAIN"];
-let editingTabName = "";
-let searchTimeout;
-let gistPushTimeout;
-let draggedTabName = null;
+    <div id="journalModal" class="modal-overlay">
+        <div class="editor-content" style="height: auto;">
+            <div class="editor-header">
+                <span>--- SECURE LOGS</span>
+                <button class="icon-btn" onclick="toggleJournal()" style="padding:0; border:none; margin:0;">[×]</button>
+            </div>
+            <textarea id="stealthJournal" class="stealth-textarea" style="height: 250px;" placeholder="Log ideas or structural calculations here..."></textarea>
+        </div>
+    </div>
 
-// Widget cache: key = "colIndex|tabName" → last rendered item-hash
-// Prevents TradingView iframes from being destroyed on unrelated state changes
-const widgetCache = {};
+    <script>
+        let myTickers = [];
+        let myJournal = "";
+        
+        let workspacesData = [{ id: 'ws_default', name: 'MAIN', columns: ["MAIN"] }];
+        let activeWsId = 'ws_default';
+        let columnsState = [];
 
-const GIST_FILENAME = 'tickers.json';
-const workspace = document.getElementById('workspace');
-const journalInput = document.getElementById('stealthJournal');
+        let editingTabName = ""; 
+        let searchTimeout;
+        let lastEscTime = 0;
+        let gistPushTimeout;
+        
+        // GLOBAL FOCUS STATE
+        let draggedTabName = null;
+        let draggedColIndex = null;
+        let draggedWsId = null;
+        let currentFocus = { type: null, id: null, colIndex: null };
 
-// ─── BOOT: LOAD LOCAL STATE ───────────────────────────────────────────────────
-(function loadLocal() {
-    try {
-        const raw = localStorage.getItem('stealthData');
-        if (raw) {
-            const d = JSON.parse(raw);
-            if (Array.isArray(d)) { myTickers = d; }
-            else { myTickers = d.tickers || []; myJournal = d.journal || ""; }
+        const GIST_FILENAME = 'tickers.json';
+        const workspace = document.getElementById('workspace');
+        const journalInput = document.getElementById('stealthJournal');
+        const widgetCache = {};
+
+        // --- HEADER BUTTON STATE MANAGER ---
+        function updateHeaderActiveStates() {
+            document.getElementById('colorToggleBtn').classList.toggle('active', isColorMode);
+            document.getElementById('notesToggleBtn').classList.toggle('active', document.getElementById('journalModal').classList.contains('visible'));
+            document.getElementById('masterToggleBtn').classList.toggle('active', document.getElementById('masterEditorModal').classList.contains('visible'));
+            document.getElementById('configToggleBtn').classList.toggle('active', document.getElementById('setupPanel').classList.contains('visible'));
         }
-    } catch(e) {}
-    try {
-        const cols = JSON.parse(localStorage.getItem('stealthCols'));
-        if (Array.isArray(cols) && cols.length > 0) columnsState = cols;
-    } catch(e) {}
-    journalInput.value = myJournal;
-})();
 
-// ─── JOURNAL AUTO-SAVE ────────────────────────────────────────────────────────
-let journalTimeout;
-journalInput.addEventListener('input', () => {
-    myJournal = journalInput.value;
-    clearTimeout(journalTimeout);
-    journalTimeout = setTimeout(() => { saveLocalState(); debouncedGistPush(); }, 600);
-});
-
-// ─── COLOR MODE ───────────────────────────────────────────────────────────────
-let isColorMode = localStorage.getItem('colorMode') === 'true';
-function applyColorMode() {
-    const btn = document.getElementById('colorToggleBtn');
-    document.body.classList.toggle('color-mode', isColorMode);
-    btn.innerText = isColorMode ? '◑ STEALTH' : '◑ COLOR';
-}
-function toggleColors() {
-    isColorMode = !isColorMode;
-    localStorage.setItem('colorMode', isColorMode);
-    applyColorMode(); // Pure CSS class toggle — no widget rebuild
-}
-
-// ─── SYNC STATUS ──────────────────────────────────────────────────────────────
-function setStatus(msg, cls) {
-    const el = document.getElementById('syncStatus');
-    el.textContent = msg;
-    el.className = cls;
-}
-function getCreds() {
-    return {
-        token: localStorage.getItem('gistToken') || '',
-        id: localStorage.getItem('gistId') || ''
-    };
-}
-
-// ─── SETUP PANEL ─────────────────────────────────────────────────────────────
-function toggleSetup() {
-    const panel = document.getElementById('setupPanel');
-    panel.classList.toggle('visible');
-    if (panel.classList.contains('visible')) {
-        // Always pre-populate from storage so user can see/edit current creds
-        const { token, id } = getCreds();
-        if (token) document.getElementById('tokenInput').value = token;
-        if (id) document.getElementById('gistIdInput').value = id;
-    }
-}
-
-async function saveCredentials() {
-    const rawToken = document.getElementById('tokenInput').value.trim();
-    const rawId = document.getElementById('gistIdInput').value.trim();
-
-    if (!rawToken) { setStatus('MISSING TOKEN', 'status-err'); return; }
-
-    // Only write non-empty values — never clobber existing data with blanks
-    if (rawToken) localStorage.setItem('gistToken', rawToken);
-    if (rawId)    localStorage.setItem('gistId', rawId);
-
-    const { id } = getCreds();
-    if (!id) {
-        // First time: create a new private gist
-        setStatus('CREATING GIST...', 'status-working');
-        try {
-            const res = await fetch('https://api.github.com/gists', {
-                method: 'POST',
-                headers: { 'Authorization': `token ${rawToken}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    public: false,
-                    files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } }
-                })
-            });
-            if (!res.ok) throw new Error('Permission denied');
-            const data = await res.json();
-            localStorage.setItem('gistId', data.id);
-            document.getElementById('gistIdInput').value = data.id;
-            setStatus('✓ GIST CREATED', 'status-ok');
-        } catch(e) {
-            setStatus('PERMISSION DENIED — check token scope', 'status-err');
+        // --- FOCUS ENGINE ---
+        function setFocus(type, id, colIndex) {
+            clearFocus();
+            currentFocus = { type, id, colIndex };
+            
+            if (colIndex !== null) {
+                const col = document.getElementById(`col-${colIndex}`);
+                if (col) col.classList.add('active-col');
+            }
         }
-    } else {
-        autoPullFromGist();
-    }
-}
 
-function clearCredentials() {
-    if (!confirm('Clear saved token and Gist ID?')) return;
-    localStorage.removeItem('gistToken');
-    localStorage.removeItem('gistId');
-    document.getElementById('tokenInput').value = '';
-    document.getElementById('gistIdInput').value = '';
-    setStatus('LOCAL MODE', 'status-working');
-}
+        function clearFocus() {
+            if (currentFocus.colIndex !== null) {
+                const col = document.getElementById(`col-${currentFocus.colIndex}`);
+                if (col) col.classList.remove('active-col');
+            }
+            currentFocus = { type: null, id: null, colIndex: null };
+        }
 
-// ─── GIST PUSH/PULL ───────────────────────────────────────────────────────────
-// Debounced so rapid ticker adds only trigger one network request
-function debouncedGistPush() {
-    clearTimeout(gistPushTimeout);
-    gistPushTimeout = setTimeout(autoPushToGist, 400);
-}
-
-async function autoPushToGist() {
-    const { token, id } = getCreds();
-    if (!token || !id) return;
-    setStatus('SAVING...', 'status-working');
-    try {
-        const res = await fetch(`https://api.github.com/gists/${id}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } } })
+        document.addEventListener('click', (e) => {
+            const col = e.target.closest('.column-container');
+            const tabBtn = e.target.closest('.tab-btn');
+            const wsBtn = e.target.closest('.ws-btn');
+            const syncBtn = e.target.closest('.sync-btn');
+            
+            if (syncBtn) {
+                clearFocus();
+                return;
+            }
+            
+            if (tabBtn || wsBtn) return; // Handled inline so columns register accurately
+            
+            if (col) {
+                const colIndex = parseInt(col.id.replace('col-', ''));
+                setFocus('column', null, colIndex);
+            } else if (!e.target.closest('.modal-overlay.visible') && !e.target.closest('#setupPanel')) {
+                clearFocus();
+            }
         });
-        if (!res.ok) throw new Error('Sync failed');
-        setStatus('✓ SYNCED', 'status-ok');
-    } catch(e) { setStatus('SYNC FAILED', 'status-err'); }
-}
 
-async function autoPullFromGist() {
-    const { token, id } = getCreds();
-    if (!token || !id) { setStatus('LOCAL MODE', 'status-working'); return; }
-    setStatus('UPDATING...', 'status-working');
-    try {
-        const res = await fetch(`https://api.github.com/gists/${id}?t=${Date.now()}`, {
-            headers: { 'Authorization': `token ${token}` }
+        // --- HOTKEYS & DOUBLE ESC COLLAPSE ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    e.target.blur();
+                }
+
+                const now = Date.now();
+                const fast = now - lastEscTime < 400;
+                lastEscTime = now;
+                
+                if (!fast) return;
+
+                const openModals = document.querySelectorAll('.modal-overlay.visible');
+                if (openModals.length > 0 || document.getElementById('setupPanel').classList.contains('visible')) {
+                    closeTabEditor();
+                    closeMasterEditor();
+                    const j = document.getElementById('journalModal');
+                    if (j.classList.contains('visible')) toggleJournal();
+                    const s = document.getElementById('setupPanel');
+                    if (s.classList.contains('visible')) toggleSetup();
+                    
+                    updateHeaderActiveStates();
+                    return;
+                }
+
+                if (!currentFocus.type) return;
+                if (currentFocus.type === 'column') {
+                    removeColumn(currentFocus.colIndex);
+                } else if (currentFocus.type === 'tab') {
+                    deleteTab(currentFocus.id);
+                } else if (currentFocus.type === 'workspace') {
+                    if (workspacesData.length > 1 && confirm('Delete this entire workspace?')) {
+                        workspacesData = workspacesData.filter(w => w.id !== currentFocus.id);
+                        if (activeWsId === currentFocus.id) activeWsId = workspacesData[0].id;
+                        syncColumnsFromWorkspace();
+                        saveLocalState();
+                        workspace.innerHTML = '';
+                        invalidateAllWidgets();
+                        renderApp();
+                    }
+                }
+                clearFocus();
+            }
+
+            if (e.key === '\\') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                e.preventDefault();
+                let targetInput = null;
+                
+                if (currentFocus.colIndex !== null) {
+                    const col = document.getElementById(`col-${currentFocus.colIndex}`);
+                    if (col) targetInput = col.querySelector('.colTickerInput');
+                }
+                if (!targetInput) {
+                    targetInput = document.querySelector('.colTickerInput');
+                }
+                
+                if (targetInput) {
+                    targetInput.focus();
+                    const colWrapper = targetInput.closest('.column-container');
+                    if (colWrapper) {
+                        const idx = parseInt(colWrapper.id.replace('col-', ''));
+                        setFocus('column', null, idx);
+                    }
+                }
+            }
         });
-        if (!res.ok) throw new Error('Pull failed');
-        const gist = await res.json();
-        const content = JSON.parse(gist.files[GIST_FILENAME].content);
-        if (Array.isArray(content)) { myTickers = content; }
-        else { myTickers = content.tickers || []; myJournal = content.journal || ""; }
-        saveLocalState();
-        journalInput.value = myJournal;
-        invalidateAllWidgets(); // Force re-render since remote data may differ
-        renderApp();
-        setStatus('✓ SYNCED', 'status-ok');
-    } catch(e) { setStatus('UPDATE FAILED', 'status-err'); }
-}
 
-// ─── LOCAL PERSISTENCE ────────────────────────────────────────────────────────
-function saveLocalState() {
-    localStorage.setItem('stealthData', JSON.stringify({ tickers: myTickers, journal: myJournal }));
-    localStorage.setItem('stealthCols', JSON.stringify(columnsState));
-}
-
-// ─── WIDGET CACHE HELPERS ─────────────────────────────────────────────────────
-function itemHash(items) {
-    // Simple fast hash — enough to detect changes
-    let h = 0;
-    const s = items.join('|');
-    for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; }
-    return h;
-}
-
-function widgetCacheKey(colIndex, tabName) { return `${colIndex}|${tabName}`; }
-
-function invalidateAllWidgets() {
-    for (const k in widgetCache) delete widgetCache[k];
-}
-
-function invalidateTabWidgets(tabName) {
-    for (const k in widgetCache) {
-        if (k.endsWith(`|${tabName}`)) delete widgetCache[k];
-    }
-}
-
-// ─── DATA PARSING ─────────────────────────────────────────────────────────────
-function getParsedTabs() {
-    const tabs = [];
-    let current = null;
-    myTickers.forEach(item => {
-        if (item.startsWith('===')) {
-            if (current) tabs.push(current);
-            current = { name: item.replace('===', '').trim() || 'UNNAMED', items: [] };
-        } else {
-            if (!current) current = { name: 'MAIN', items: [] };
-            current.items.push(item);
-        }
-    });
-    if (current) tabs.push(current);
-    if (tabs.length === 0) tabs.push({ name: 'MAIN', items: [] });
-    return tabs;
-}
-
-function getItemsForTab(tabName) {
-    return getParsedTabs().find(t => t.name === tabName)?.items ?? [];
-}
-
-// ─── TAB REORDERING / DELETION ────────────────────────────────────────────────
-function reserializeFromTabs(tabs) {
-    myTickers = [];
-    tabs.forEach(t => { myTickers.push(`=== ${t.name}`); myTickers.push(...t.items); });
-}
-
-function moveTab(tabName, dir) {
-    const tabs = getParsedTabs();
-    const i = tabs.findIndex(t => t.name === tabName);
-    if (i < 0) return;
-    const swap = dir === 'left' ? i - 1 : i + 1;
-    if (swap < 0 || swap >= tabs.length) return;
-    [tabs[i], tabs[swap]] = [tabs[swap], tabs[i]];
-    reserializeFromTabs(tabs);
-    saveLocalState(); renderApp();
-}
-
-function deleteTab(tabName) {
-    if (!confirm(`Delete entire [${tabName}] watchlist?`)) return;
-    let tabs = getParsedTabs().filter(t => t.name !== tabName);
-    if (!tabs.length) tabs = [{ name: 'MAIN', items: [] }];
-    reserializeFromTabs(tabs);
-    columnsState = columnsState.map(c => c === tabName ? tabs[0].name : c);
-    invalidateTabWidgets(tabName);
-    saveLocalState(); debouncedGistPush(); renderApp();
-}
-
-// ─── MULTI-COLUMN MANAGEMENT ──────────────────────────────────────────────────
-function addColumn() {
-    columnsState.push(getParsedTabs()[0].name);
-    saveLocalState(); renderApp();
-}
-
-function removeColumn(index) {
-    // Clean up cache entries for this column
-    for (const k in widgetCache) {
-        if (k.startsWith(`${index}|`)) delete widgetCache[k];
-    }
-    columnsState.splice(index, 1);
-    if (!columnsState.length) columnsState = ['MAIN'];
-    saveLocalState(); renderApp();
-}
-
-function switchColumnTab(colIndex, tabName) {
-    columnsState[colIndex] = tabName;
-    saveLocalState();
-    // Only update the tab UI and widget for this column — no full rebuild
-    updateColumnWidget(colIndex);
-    updateColumnTabBar(colIndex);
-}
-
-// ─── TICKER INSERTION ─────────────────────────────────────────────────────────
-function insertItemsIntoTab(tabName, newItems, append = false) {
-    if (!myTickers.length || !myTickers[0].startsWith('===')) myTickers.unshift('=== MAIN');
-
-    const built = [];
-    let inTarget = false, found = false;
-
-    for (let i = 0; i < myTickers.length; i++) {
-        if (myTickers[i].startsWith('===')) {
-            const cur = myTickers[i].replace('===', '').trim();
-            if (cur === tabName) {
-                inTarget = true; found = true;
-                built.push(`=== ${tabName}`);
-                if (append) {
-                    let j = i + 1;
-                    while (j < myTickers.length && !myTickers[j].startsWith('===')) built.push(myTickers[j++]);
-                    built.push(...newItems);
-                    i = j - 1;
+        // --- BOOT: LOAD LOCAL STATE ---
+        (function loadLocal() {
+            try {
+                const raw = localStorage.getItem('stealthData');
+                if (raw) {
+                    const d = JSON.parse(raw);
+                    if (Array.isArray(d)) { myTickers = d; }
+                    else { myTickers = d.tickers || []; myJournal = d.journal || ""; }
+                }
+            } catch(e) {}
+            
+            try {
+                const wsd = JSON.parse(localStorage.getItem('stealthWorkspaces'));
+                const awid = localStorage.getItem('stealthActiveWs');
+                if (Array.isArray(wsd) && wsd.length > 0) {
+                    workspacesData = wsd;
+                    activeWsId = awid || wsd[0].id;
                 } else {
-                    built.push(...newItems);
+                    const oldCols = JSON.parse(localStorage.getItem('stealthCols'));
+                    if (Array.isArray(oldCols) && oldCols.length > 0) {
+                        workspacesData[0].columns = oldCols;
+                    }
+                }
+            } catch(e) {}
+            
+            syncColumnsFromWorkspace();
+            journalInput.value = myJournal;
+        })();
+
+        function syncColumnsFromWorkspace() {
+            const ws = workspacesData.find(w => w.id === activeWsId);
+            if (ws) columnsState = [...ws.columns];
+        }
+
+        // --- JOURNAL AUTO-SAVE ---
+        let journalTimeout;
+        journalInput.addEventListener('input', () => {
+            myJournal = journalInput.value;
+            clearTimeout(journalTimeout);
+            journalTimeout = setTimeout(() => { saveLocalState(); debouncedGistPush(); }, 600);
+        });
+
+        // --- COLOR MODE ---
+        let isColorMode = localStorage.getItem('colorMode') === 'true';
+        function applyColorMode() {
+            document.body.classList.toggle('color-mode', isColorMode);
+            document.getElementById('colorToggleBtn').innerText = isColorMode ? '◑ STEALTH' : '◑ COLOR';
+            updateHeaderActiveStates();
+        }
+        function toggleColors() {
+            isColorMode = !isColorMode;
+            localStorage.setItem('colorMode', isColorMode);
+            applyColorMode(); 
+        }
+
+        // --- SYNC CORE ---
+        function setStatus(msg, className) { document.getElementById('syncStatus').textContent = msg; document.getElementById('syncStatus').className = className; }
+        function getCreds() { return { token: localStorage.getItem('gistToken') || '', id: localStorage.getItem('gistId') || '' }; }
+        function toggleSetup() { 
+            const panel = document.getElementById('setupPanel');
+            panel.classList.toggle('visible');
+            if (panel.classList.contains('visible')) {
+                const { token, id } = getCreds();
+                if (token) document.getElementById('tokenInput').value = token;
+                if (id) document.getElementById('gistIdInput').value = id;
+            }
+            updateHeaderActiveStates();
+        }
+
+        async function saveCredentials() {
+            const rawToken = document.getElementById('tokenInput').value.trim();
+            const rawId = document.getElementById('gistIdInput').value.trim();
+
+            if (!rawToken) { setStatus('MISSING TOKEN', 'status-err'); return; }
+
+            localStorage.setItem('gistToken', rawToken);
+            if (rawId) localStorage.setItem('gistId', rawId);
+            
+            const { id } = getCreds();
+            if(!id) {
+                setStatus('CREATING GIST...', 'status-working');
+                try {
+                    const res = await fetch('https://api.github.com/gists', {
+                        method: 'POST', headers: { 'Authorization': `token ${rawToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ public: false, files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } } })
+                    });
+                    if(!res.ok) throw new Error("Permission Error");
+                    const data = await res.json();
+                    localStorage.setItem('gistId', data.id);
+                    document.getElementById('gistIdInput').value = data.id; 
+                    setStatus('✓ SYNCED', 'status-ok');
+                } catch (e) {
+                    setStatus('PERMISSION DENIED', 'status-err');
                 }
             } else {
-                inTarget = false; built.push(myTickers[i]);
+                autoPullFromGist();
             }
-        } else {
-            if (!inTarget) built.push(myTickers[i]);
         }
-    }
-    if (!found) { built.push(`=== ${tabName}`); built.push(...newItems); }
-    myTickers = built;
 
-    invalidateTabWidgets(tabName);
-    saveLocalState();
-    debouncedGistPush();
-
-    // Only re-render columns that display this tab — not everything
-    columnsState.forEach((activeTab, colIndex) => {
-        if (activeTab === tabName) updateColumnWidget(colIndex);
-    });
-}
-
-// ─── RENDER: FULL APP (structural changes only) ───────────────────────────────
-function renderApp() {
-    const tabs = getParsedTabs();
-    workspace.innerHTML = '';
-    // Invalidate old column-index keys since DOM is fresh
-    for (const k in widgetCache) delete widgetCache[k];
-
-    columnsState = columnsState.map(c => tabs.find(t => t.name === c) ? c : tabs[0].name);
-
-    columnsState.forEach((activeTabName, colIndex) => {
-        workspace.appendChild(buildColumn(colIndex, activeTabName, tabs));
-    });
-}
-
-// ─── RENDER: SINGLE COLUMN ────────────────────────────────────────────────────
-function buildColumn(colIndex, activeTabName, tabs) {
-    const colDiv = document.createElement('div');
-    colDiv.className = 'column-container';
-    colDiv.id = `col-${colIndex}`;
-
-    // Header
-    colDiv.innerHTML = `
-        <div class="col-header">
-            <span class="col-title">Quote Monitor</span>
-            <div class="col-header-icons">
-                <button onclick="addColumn()" title="Add Column">[+]</button>
-                <button onclick="removeColumn(${colIndex})" title="Close Column">[×]</button>
-            </div>
-        </div>
-    `;
-
-    // Tab bar
-    colDiv.appendChild(buildTabBar(colIndex, activeTabName, tabs));
-
-    // Widget stack — one layer per tab, only active is visible
-    const stack = document.createElement('div');
-    stack.className = 'widgetStack';
-    stack.id = `wstack-${colIndex}`;
-
-    tabs.forEach(tab => {
-        const layer = document.createElement('div');
-        layer.className = `widgetLayer${tab.name === activeTabName ? ' active' : ''}`;
-        layer.id = `wlayer-${colIndex}-${tab.name.replace(/\W/g,'_')}`;
-        stack.appendChild(layer);
-    });
-
-    colDiv.appendChild(stack);
-
-    // Bottom input bar
-    colDiv.appendChild(buildBottomBar(colIndex, activeTabName));
-
-    // Inject widget for currently active tab
-    setTimeout(() => injectWidget(colIndex, activeTabName, tabs), 0);
-
-    return colDiv;
-}
-
-// ─── RENDER: TAB BAR (fast partial update) ────────────────────────────────────
-function buildTabBar(colIndex, activeTabName, tabs) {
-    const tabBar = document.createElement('div');
-    tabBar.className = 'tabBar';
-    tabBar.id = `tabbar-${colIndex}`;
-
-    tabs.forEach(tab => {
-        const btn = document.createElement('button');
-        const isActive = tab.name === activeTabName;
-        btn.className = `tab-btn${isActive ? ' active' : ''}`;
-        btn.draggable = true;
-
-        btn.ondragstart = e => { draggedTabName = tab.name; e.dataTransfer.effectAllowed = 'move'; };
-        btn.ondragover = e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
-        btn.ondrop = e => {
-            e.preventDefault();
-            if (draggedTabName && draggedTabName !== tab.name) {
-                const parsed = getParsedTabs();
-                const fromIdx = parsed.findIndex(t => t.name === draggedTabName);
-                const toIdx = parsed.findIndex(t => t.name === tab.name);
-                const [moved] = parsed.splice(fromIdx, 1);
-                parsed.splice(toIdx, 0, moved);
-                reserializeFromTabs(parsed);
-                saveLocalState(); debouncedGistPush(); renderApp();
-            }
-        };
-
-        btn.onclick = () => switchColumnTab(colIndex, tab.name);
-
-        if (isActive) {
-            btn.innerHTML = `
-                <button class="tab-move-btn" onclick="event.stopPropagation();moveTab('${tab.name}','left')">&lt;</button>
-                ${tab.name}
-                <button class="tab-move-btn" onclick="event.stopPropagation();moveTab('${tab.name}','right')">&gt;</button>
-                <button class="tab-del-btn" onclick="event.stopPropagation();deleteTab('${tab.name}')">[×]</button>
-            `;
-        } else {
-            btn.innerText = `[ ${tab.name} ]`;
+        function clearCredentials() {
+            if (!confirm('Clear saved token and Gist ID?')) return;
+            localStorage.removeItem('gistToken');
+            localStorage.removeItem('gistId');
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('gistIdInput').value = '';
+            setStatus('LOCAL MODE', 'status-working');
         }
-        tabBar.appendChild(btn);
-    });
 
-    // Inline new-tab control
-    const tabControls = document.createElement('div');
-    tabControls.className = 'tab-controls';
-    const addTabBtn = document.createElement('button');
-    addTabBtn.className = 'icon-btn'; addTabBtn.innerText = '[+]';
-    const inlineInput = document.createElement('input');
-    inlineInput.type = 'text'; inlineInput.className = 'inline-tab-input'; inlineInput.placeholder = 'Name...';
+        function debouncedGistPush() {
+            clearTimeout(gistPushTimeout);
+            gistPushTimeout = setTimeout(autoPushToGist, 400);
+        }
 
-    let processing = false;
-    const processTab = () => {
-        if (processing) return; processing = true;
-        const name = inlineInput.value.trim().toUpperCase();
-        if (name) { myTickers.push(`=== ${name}`); columnsState[colIndex] = name; saveLocalState(); debouncedGistPush(); renderApp(); }
-        else renderApp();
-    };
-
-    addTabBtn.onclick = () => { addTabBtn.style.display = 'none'; inlineInput.style.display = 'inline-block'; inlineInput.focus(); };
-    inlineInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); processTab(); } });
-    inlineInput.addEventListener('blur', processTab);
-
-    tabControls.appendChild(addTabBtn);
-    tabControls.appendChild(inlineInput);
-    tabBar.appendChild(tabControls);
-
-    return tabBar;
-}
-
-// ─── RENDER: BOTTOM BAR ───────────────────────────────────────────────────────
-function buildBottomBar(colIndex, activeTabName) {
-    const bottomBar = document.createElement('div');
-    bottomBar.className = 'bottomInputBar';
-
-    const inputWrap = document.createElement('div');
-    inputWrap.style.cssText = 'position:relative;flex-grow:1;';
-
-    const inputEl = document.createElement('input');
-    inputEl.type = 'text'; inputEl.className = 'colTickerInput';
-    inputEl.placeholder = 'Search TradingView...';
-
-    const suggBox = document.createElement('div');
-    suggBox.className = 'suggestions-box';
-
-    function makeSuggItem(symbol, name, exchange) {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        const fullTicker = exchange ? `${exchange}:${symbol}` : symbol;
-        div.innerHTML = `
-            <div class="sugg-text-col" style="max-width:75%;">
-                <span class="sugg-symbol">${symbol}</span>
-                <span class="sugg-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name||''}</span>
-            </div>
-            <span class="sugg-exchange">${exchange}</span>
-        `;
-        div.onclick = () => {
-            insertItemsIntoTab(columnsState[colIndex], [fullTicker], true);
-            suggBox.style.display = 'none'; inputEl.value = '';
-        };
-        return div;
-    }
-
-    function makeManualItem(query) {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        div.innerHTML = `<div class="sugg-text-col"><span class="sugg-symbol">Add manually:</span></div><span class="sugg-exchange">${query}</span>`;
-        div.onclick = () => { insertItemsIntoTab(columnsState[colIndex], [query], true); suggBox.style.display = 'none'; inputEl.value = ''; };
-        return div;
-    }
-
-    inputEl.addEventListener('input', function() {
-        const query = this.value.trim().toUpperCase();
-        suggBox.innerHTML = '';
-        if (!query || query.startsWith('-') || query.startsWith('=')) { suggBox.style.display = 'none'; return; }
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(async () => {
+        async function autoPushToGist() {
+            const { token, id } = getCreds();
+            if (!token || !id) return; 
+            setStatus('SAVING...', 'status-working');
             try {
-                const url = `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(query)}`;
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-                if (!res.ok) throw new Error();
-                const matches = await res.json();
-                suggBox.innerHTML = '';
-                if (matches && matches.length > 0) {
-                    matches.slice(0, 10).forEach(m => suggBox.appendChild(makeSuggItem(m.symbol, m.description, m.exchange || m.prefix || '')));
+                const res = await fetch(`https://api.github.com/gists/${id}`, {
+                    method: 'PATCH', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } } })
+                });
+                if(!res.ok) throw new Error("Sync Failed");
+                setStatus('✓ SYNCED', 'status-ok');
+            } catch (e) { setStatus('SYNC FAILED', 'status-err'); }
+        }
+
+        async function autoPullFromGist() {
+            const { token, id } = getCreds();
+            if (!token || !id) { setStatus('LOCAL MODE', 'status-working'); return; }
+            setStatus('UPDATING...', 'status-working');
+            try {
+                const res = await fetch(`https://api.github.com/gists/${id}?t=${Date.now()}`, { headers: { 'Authorization': `token ${token}` } });
+                if(!res.ok) throw new Error("Pull Failed");
+                const gist = await res.json();
+                const cloudContent = JSON.parse(gist.files[GIST_FILENAME].content);
+                if (Array.isArray(cloudContent)) { myTickers = cloudContent; } else { myTickers = cloudContent.tickers || []; myJournal = cloudContent.journal || ""; }
+                saveLocalState(); journalInput.value = myJournal; 
+                invalidateAllWidgets();
+                workspace.innerHTML = ''; 
+                renderApp(); 
+                setStatus('✓ SYNCED', 'status-ok');
+            } catch (e) { setStatus('UPDATE FAILED', 'status-err'); }
+        }
+
+        function saveLocalState() {
+            const ws = workspacesData.find(w => w.id === activeWsId);
+            if (ws) ws.columns = [...columnsState]; 
+            
+            localStorage.setItem('stealthData', JSON.stringify({ tickers: myTickers, journal: myJournal }));
+            localStorage.setItem('stealthWorkspaces', JSON.stringify(workspacesData));
+            localStorage.setItem('stealthActiveWs', activeWsId);
+        }
+        
+        // --- CACHE HELPERS ---
+        function itemHash(items) {
+            let h = 0;
+            const s = items.join('|');
+            for (let i = 0; i < s.length; i++) { h = (Math.imul(31, h) + s.charCodeAt(i)) | 0; }
+            return h;
+        }
+        function widgetCacheKey(colIndex, tabName) { return `${activeWsId}|${colIndex}|${tabName}`; }
+        function invalidateAllWidgets() { for (const k in widgetCache) delete widgetCache[k]; }
+        function invalidateTabWidgets(tabName) { for (const k in widgetCache) { if (k.endsWith(`|${tabName}`)) delete widgetCache[k]; } }
+
+        // --- DATA PARSING & TAB REORDERING ---
+        function getParsedTabs() {
+            let tabs = []; let currentTab = null;
+            myTickers.forEach(item => {
+                if (item.startsWith('===')) {
+                    if (currentTab) tabs.push(currentTab);
+                    currentTab = { name: item.replace('===', '').trim() || "UNNAMED", items: [] };
                 } else {
-                    suggBox.appendChild(makeManualItem(query));
+                    if (!currentTab) currentTab = { name: "MAIN", items: [] };
+                    currentTab.items.push(item);
                 }
-                suggBox.style.display = 'block';
-            } catch(e) {
-                suggBox.innerHTML = '';
-                suggBox.appendChild(makeManualItem(query));
-                suggBox.style.display = 'block';
+            });
+            if (currentTab) tabs.push(currentTab);
+            if (tabs.length === 0) tabs.push({ name: "MAIN", items: [] });
+            return tabs;
+        }
+
+        function reserializeFromTabs(tabs) {
+            myTickers = [];
+            tabs.forEach(t => { myTickers.push(`=== ${t.name}`); myTickers.push(...t.items); });
+        }
+
+        function moveTab(tabName, direction) {
+            let tabs = getParsedTabs();
+            let idx = tabs.findIndex(t => t.name === tabName);
+            if (idx === -1) return;
+            const swap = direction === 'left' ? idx - 1 : idx + 1;
+            if (swap < 0 || swap >= tabs.length) return;
+            [tabs[idx], tabs[swap]] = [tabs[swap], tabs[idx]];
+            reserializeFromTabs(tabs);
+            saveLocalState(); debouncedGistPush(); renderApp();
+        }
+
+        function deleteTab(tabName) {
+            if(!confirm(`Are you sure you want to delete the entire [${tabName}] watchlist?`)) return;
+            let tabs = getParsedTabs().filter(t => t.name !== tabName);
+            if(!tabs.length) tabs = [{name: "MAIN", items: []}];
+            reserializeFromTabs(tabs);
+            columnsState = columnsState.map(c => c === tabName ? tabs[0].name : c);
+            invalidateTabWidgets(tabName);
+            workspace.innerHTML = '';
+            saveLocalState(); debouncedGistPush(); renderApp();
+        }
+
+        function getItemsForTab(tabName) { return getParsedTabs().find(t => t.name === tabName)?.items ?? []; }
+
+        // --- WORKSPACE FOOTER MANAGEMENT & DRAG ---
+        function showAddWs() {
+            document.getElementById('addWsBtn').style.display = 'none';
+            const input = document.getElementById('wsInput');
+            input.style.display = 'inline-block';
+            input.focus();
+        }
+
+        function processAddWs() {
+            const input = document.getElementById('wsInput');
+            const name = input.value.trim().toUpperCase();
+            if (name) {
+                const newId = 'ws_' + Date.now();
+                workspacesData.push({ id: newId, name: name, columns: ['MAIN'] });
+                activeWsId = newId;
+                syncColumnsFromWorkspace();
+                saveLocalState();
+                renderApp();
             }
-        }, 350);
-    });
-
-    inputEl.addEventListener('keypress', e => {
-        if (e.key === 'Enter' && inputEl.value.trim()) {
-            insertItemsIntoTab(columnsState[colIndex], [inputEl.value.trim().toUpperCase()], true);
-            inputEl.value = ''; suggBox.style.display = 'none';
+            input.value = '';
+            input.style.display = 'none';
+            document.getElementById('addWsBtn').style.display = 'inline-block';
         }
-    });
 
-    document.addEventListener('click', e => { if (e.target !== inputEl) suggBox.style.display = 'none'; }, { passive: true });
+        document.getElementById('wsInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); processAddWs(); } });
+        document.getElementById('wsInput').addEventListener('blur', () => { processAddWs(); });
 
-    const importWrap = document.createElement('div');
-    importWrap.className = 'import-wrapper';
-    importWrap.innerHTML = '<span>Or</span>';
-    const batchBtn = document.createElement('button');
-    batchBtn.className = 'bottom-btn'; batchBtn.innerText = 'Batch Import';
-    batchBtn.onclick = () => openTabEditor(columnsState[colIndex]);
-    importWrap.appendChild(batchBtn);
+        function switchWorkspace(id) {
+            activeWsId = id;
+            syncColumnsFromWorkspace();
+            saveLocalState();
+            renderApp(); 
+        }
 
-    inputWrap.appendChild(inputEl); inputWrap.appendChild(suggBox);
-    bottomBar.appendChild(inputWrap); bottomBar.appendChild(importWrap);
-    return bottomBar;
-}
+        function deleteWorkspace(id) {
+            if(workspacesData.length <= 1) { return; }
+            if(!confirm("Delete this entire workspace?")) return;
+            
+            workspacesData = workspacesData.filter(w => w.id !== id);
+            if (activeWsId === id) activeWsId = workspacesData[0].id;
+            syncColumnsFromWorkspace();
+            saveLocalState();
+            workspace.innerHTML = ''; 
+            invalidateAllWidgets();
+            renderApp();
+        }
 
-// ─── WIDGET INJECTION (cached — no re-create if data unchanged) ───────────────
-function injectWidget(colIndex, tabName, tabs) {
-    const tabData = (tabs || getParsedTabs()).find(t => t.name === tabName);
-    const items = tabData ? tabData.items : [];
-    const hash = itemHash(items);
-    const ckey = widgetCacheKey(colIndex, tabName);
+        function renderFooter() {
+            const container = document.getElementById('wsTabsContainer');
+            container.innerHTML = '';
+            workspacesData.forEach(ws => {
+                const btn = document.createElement('button');
+                const isActive = ws.id === activeWsId;
+                btn.className = `ws-btn ${isActive ? 'active' : ''}`;
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    switchWorkspace(ws.id);
+                    setFocus('workspace', ws.id, null);
+                };
 
-    if (widgetCache[ckey] === hash) return; // Already rendered, skip
-    widgetCache[ckey] = hash;
+                btn.draggable = true;
+                btn.ondragstart = (e) => {
+                    draggedTabName = null; draggedColIndex = null;
+                    draggedWsId = ws.id;
+                    e.dataTransfer.effectAllowed = 'move';
+                };
+                btn.ondragover = (e) => {
+                    if (draggedWsId !== null) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                    }
+                };
+                btn.ondrop = (e) => {
+                    if (draggedWsId !== null && draggedWsId !== ws.id) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const fromIdx = workspacesData.findIndex(w => w.id === draggedWsId);
+                        const toIdx = workspacesData.findIndex(w => w.id === ws.id);
+                        const [moved] = workspacesData.splice(fromIdx, 1);
+                        workspacesData.splice(toIdx, 0, moved);
+                        draggedWsId = null;
+                        saveLocalState();
+                        renderApp();
+                    }
+                };
+                
+                let html = ws.name;
+                if (isActive) {
+                    html += `<button class="ws-del-btn" onclick="event.stopPropagation(); deleteWorkspace('${ws.id}')">[×]</button>`;
+                }
+                btn.innerHTML = html;
+                container.appendChild(btn);
+            });
+        }
 
-    const layerId = `wlayer-${colIndex}-${tabName.replace(/\W/g,'_')}`;
-    const layer = document.getElementById(layerId);
-    if (!layer) return;
+        // --- MULTI-COLUMN UI SURGICAL RENDERING ---
+        function addColumn() { columnsState.push(getParsedTabs()[0].name); saveLocalState(); renderApp(); }
+        
+        function removeColumn(index) { 
+            for (const k in widgetCache) { if (k.startsWith(`${activeWsId}|${index}|`)) delete widgetCache[k]; }
+            columnsState.splice(index, 1); 
+            if(!columnsState.length) columnsState = ["MAIN"]; 
+            saveLocalState(); renderApp(); 
+        }
 
-    layer.innerHTML = ''; // Clear stale widget
+        function switchColumnTab(colIndex, tabName) { 
+            columnsState[colIndex] = tabName; 
+            saveLocalState(); 
+            updateColumnWidget(colIndex);
+            updateColumnTabBar(colIndex);
+        }
 
-    const widgetDiv = document.createElement('div');
-    widgetDiv.className = 'stealth-widget';
-    const containerDiv = document.createElement('div');
-    containerDiv.className = 'tradingview-widget-container';
-    const placeholder = document.createElement('div');
-    placeholder.className = 'tradingview-widget-container__widget';
-    containerDiv.appendChild(placeholder);
+        function renderApp() {
+            clearFocus(); 
+            const tabs = getParsedTabs();
+            renderFooter();
 
-    // Build symbol groups
-    let groups = [], currentSymbols = [], currentName = '', gc = 1;
-    items.forEach(item => {
-        if (item.startsWith('---')) {
-            if (currentSymbols.length > 0) { groups.push({ name: currentName, symbols: currentSymbols }); currentSymbols = []; }
+            columnsState = columnsState.map(c => tabs.find(t => t.name === c) ? c : tabs[0].name);
+
+            while (workspace.children.length < columnsState.length) {
+                const colIndex = workspace.children.length;
+                workspace.appendChild(buildColumnShell(colIndex));
+            }
+            
+            while (workspace.children.length > columnsState.length) {
+                const colIndex = workspace.children.length - 1;
+                for (const k in widgetCache) { if (k.startsWith(`${activeWsId}|${colIndex}|`)) delete widgetCache[k]; }
+                workspace.removeChild(workspace.lastChild);
+            }
+
+            columnsState.forEach((_, colIndex) => {
+                updateColumnTabBar(colIndex);
+                updateColumnWidget(colIndex);
+            });
+        }
+
+        function buildColumnShell(colIndex) {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'column-container';
+            colDiv.id = `col-${colIndex}`;
+
+            colDiv.innerHTML = `
+                <div class="col-header">
+                    <span class="col-title">Quote Monitor</span>
+                    <div class="col-header-icons">
+                        <button onclick="addColumn()" title="Add Column">[+]</button>
+                        <button onclick="removeColumn(${colIndex})" title="Close Column">[×]</button>
+                    </div>
+                </div>
+            `;
+            
+            const colHeader = colDiv.querySelector('.col-header');
+            colHeader.draggable = true;
+            colHeader.ondragstart = (e) => {
+                draggedTabName = null; draggedWsId = null;
+                draggedColIndex = colIndex;
+                e.dataTransfer.effectAllowed = 'move';
+            };
+            colDiv.ondragover = (e) => {
+                if (draggedColIndex !== null) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                }
+            };
+            colDiv.ondrop = (e) => {
+                if (draggedColIndex !== null && draggedColIndex !== colIndex) {
+                    e.preventDefault();
+                    const moved = columnsState.splice(draggedColIndex, 1)[0];
+                    columnsState.splice(colIndex, 0, moved);
+                    draggedColIndex = null;
+                    saveLocalState();
+                    renderApp();
+                }
+            };
+
+            const tabBar = document.createElement('div');
+            tabBar.className = 'tabBar';
+            tabBar.id = `tabbar-${colIndex}`;
+            colDiv.appendChild(tabBar);
+
+            const stack = document.createElement('div');
+            stack.className = 'widgetStack';
+            stack.id = `wstack-${colIndex}`;
+            colDiv.appendChild(stack);
+
+            colDiv.appendChild(buildBottomBar(colIndex));
+
+            return colDiv;
+        }
+
+        function buildTabBar(colIndex, activeTabName, tabs) {
+            const tabBar = document.createElement('div');
+            tabBar.className = 'tabBar';
+            tabBar.id = `tabbar-${colIndex}`;
+
+            tabs.forEach(tab => {
+                const btn = document.createElement('button');
+                const isActive = tab.name === activeTabName;
+                btn.className = `tab-btn ${isActive ? 'active' : ''}`;
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    switchColumnTab(colIndex, tab.name);
+                    setFocus('tab', tab.name, colIndex);
+                };
+
+                btn.draggable = true; 
+                btn.ondragstart = (e) => { 
+                    draggedColIndex = null; draggedWsId = null;
+                    draggedTabName = tab.name; 
+                    e.dataTransfer.effectAllowed = 'move'; 
+                };
+                btn.ondragover = (e) => { 
+                    if (draggedTabName !== null) {
+                        e.preventDefault(); 
+                        e.dataTransfer.dropEffect = 'move'; 
+                    }
+                };
+                btn.ondrop = (e) => {
+                    if(draggedTabName !== null && draggedTabName !== tab.name) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let parsed = getParsedTabs();
+                        let fromIdx = parsed.findIndex(t => t.name === draggedTabName);
+                        let toIdx = parsed.findIndex(t => t.name === tab.name);
+                        let [moved] = parsed.splice(fromIdx, 1);
+                        parsed.splice(toIdx, 0, moved);
+                        reserializeFromTabs(parsed);
+                        saveLocalState(); debouncedGistPush(); renderApp();
+                    }
+                };
+
+                if (isActive) {
+                    btn.innerHTML = `
+                        <button class="tab-move-btn" onclick="event.stopPropagation(); moveTab('${tab.name}', 'left')">&lt;</button>
+                        ${tab.name}
+                        <button class="tab-move-btn" onclick="event.stopPropagation(); moveTab('${tab.name}', 'right')">&gt;</button>
+                        <button class="tab-del-btn" title="Delete Watchlist" onclick="event.stopPropagation(); deleteTab('${tab.name}')">[×]</button>
+                    `;
+                } else {
+                    btn.innerText = `[ ${tab.name} ]`;
+                }
+                tabBar.appendChild(btn);
+            });
+
+            const tabControls = document.createElement('div');
+            tabControls.className = 'tab-controls';
+            
+            const addTabBtn = document.createElement('button');
+            addTabBtn.className = 'icon-btn'; addTabBtn.innerText = '[+]'; 
+            const inlineInput = document.createElement('input');
+            inlineInput.type = 'text'; inlineInput.className = 'inline-tab-input'; inlineInput.placeholder = 'Name...';
+            
+            let isProcessingTab = false;
+            const processInlineTab = () => {
+                if (isProcessingTab) return;
+                isProcessingTab = true;
+                
+                const newName = inlineInput.value.trim().toUpperCase();
+                if (newName) {
+                    inlineInput.value = ''; 
+                    myTickers.push(`=== ${newName}`);
+                    columnsState[colIndex] = newName;
+                    saveLocalState(); debouncedGistPush(); renderApp();
+                } else {
+                    renderApp(); 
+                }
+            };
+
+            addTabBtn.onclick = () => {
+                addTabBtn.style.display = 'none';
+                inlineInput.style.display = 'inline-block';
+                inlineInput.focus();
+            };
+
+            inlineInput.addEventListener('keypress', (e) => { 
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    processInlineTab(); 
+                }
+            });
+            inlineInput.addEventListener('blur', () => { processInlineTab(); });
+
+            tabControls.appendChild(addTabBtn); 
+            tabControls.appendChild(inlineInput);
+            tabBar.appendChild(tabControls);
+
+            return tabBar;
+        }
+
+        function buildBottomBar(colIndex) {
+            const bottomBar = document.createElement('div');
+            bottomBar.className = 'bottomInputBar';
+
+            const inputWrap = document.createElement('div');
+            inputWrap.style.cssText = 'position:relative;flex-grow:1;';
+
+            const inputEl = document.createElement('input');
+            inputEl.type = 'text'; inputEl.className = 'colTickerInput';
+            inputEl.placeholder = 'Type ticker or /N [ticker]...';
+
+            const suggBox = document.createElement('div');
+            suggBox.className = 'suggestions-box';
+
+            function makeSuggItem(symbol, name, exchange) {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                const fullTicker = exchange ? `${exchange}:${symbol}` : symbol;
+                div.innerHTML = `
+                    <div class="sugg-text-col" style="max-width:75%;">
+                        <span class="sugg-symbol">${symbol}</span>
+                        <span class="sugg-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name||''}</span>
+                    </div>
+                    <span class="sugg-exchange">${exchange}</span>
+                `;
+                div.onclick = () => {
+                    insertItemsIntoTab(columnsState[colIndex], [fullTicker], true);
+                    suggBox.style.display = 'none'; inputEl.value = '';
+                };
+                return div;
+            }
+
+            function makeManualItem(query) {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `<div class="sugg-text-col"><span class="sugg-symbol">Add manually:</span></div><span class="sugg-exchange">${query}</span>`;
+                div.onclick = () => { insertItemsIntoTab(columnsState[colIndex], [query], true); suggBox.style.display = 'none'; inputEl.value = ''; };
+                return div;
+            }
+
+            inputEl.addEventListener('input', function() {
+                const query = this.value.trim().toUpperCase();
+                suggBox.innerHTML = '';
+                
+                if (query.toLowerCase().startsWith('/n ') || query.toLowerCase() === '/n' || !query || query.startsWith('-') || query.startsWith('=')) { 
+                    suggBox.style.display = 'none'; return; 
+                }
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const url = `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(query)}`;
+                        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                        if (!res.ok) throw new Error();
+                        const matches = await res.json();
+                        suggBox.innerHTML = '';
+                        if (matches && matches.length > 0) {
+                            matches.slice(0, 10).forEach(m => suggBox.appendChild(makeSuggItem(m.symbol, m.description, m.exchange || m.prefix || '')));
+                        } else {
+                            suggBox.appendChild(makeManualItem(query));
+                        }
+                        suggBox.style.display = 'block';
+                    } catch(e) {
+                        suggBox.innerHTML = '';
+                        suggBox.appendChild(makeManualItem(query));
+                        suggBox.style.display = 'block';
+                    }
+                }, 350);
+            });
+
+            inputEl.addEventListener('keypress', e => {
+                if (e.key === 'Enter' && inputEl.value.trim()) {
+                    let val = inputEl.value.trim();
+                    
+                    if (val.toLowerCase().startsWith('/n ')) {
+                        const arg = val.substring(3).trim().toUpperCase();
+                        let currentTabItems = getItemsForTab(columnsState[colIndex]);
+                        let foundTicker = arg;
+                        for (let item of currentTabItems) {
+                            if (!item.startsWith('---') && (item === arg || item.endsWith(':' + arg))) {
+                                foundTicker = item;
+                                break;
+                            }
+                        }
+                        let urlSymbol = foundTicker.replace(':', '-');
+                        window.open(`https://www.tradingview.com/symbols/${urlSymbol}/news/`, '_blank');
+                    } else {
+                        insertItemsIntoTab(columnsState[colIndex], [val.toUpperCase()], true);
+                    }
+                    
+                    inputEl.value = ''; suggBox.style.display = 'none';
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('click', e => { if (e.target !== inputEl) suggBox.style.display = 'none'; }, { passive: true });
+
+            const importWrap = document.createElement('div');
+            importWrap.className = 'import-wrapper';
+            importWrap.innerHTML = '<span>Or</span>';
+            const batchBtn = document.createElement('button');
+            batchBtn.className = 'bottom-btn'; batchBtn.innerText = 'Batch Import';
+            batchBtn.onclick = () => openTabEditor(columnsState[colIndex]);
+            importWrap.appendChild(batchBtn);
+
+            inputWrap.appendChild(inputEl); inputWrap.appendChild(suggBox);
+            bottomBar.appendChild(inputWrap); bottomBar.appendChild(importWrap);
+            return bottomBar;
+        }
+
+        // --- BACKGROUND IFRAME INJECTION ---
+        function injectWidget(colIndex, tabName, tabs) {
+            const tabData = (tabs || getParsedTabs()).find(t => t.name === tabName);
+            const items = tabData ? tabData.items : [];
+            const hash = itemHash(items);
+            const ckey = widgetCacheKey(colIndex, tabName);
+
+            const layerId = `wlayer-${colIndex}-${tabName.replace(/\W/g,'_')}`;
+            const layer = document.getElementById(layerId);
+            if (!layer) return;
+
+            if (widgetCache[ckey] === hash && layer.children.length > 0) return; 
+            widgetCache[ckey] = hash;
+
+            layer.innerHTML = ''; 
+
+            const widgetDiv = document.createElement('div');
+            widgetDiv.className = 'stealth-widget';
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'tradingview-widget-container';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'tradingview-widget-container__widget';
+            containerDiv.appendChild(placeholder);
+
+            let groups = [], currentSymbols = [], currentName = '', gc = 1;
+            items.forEach(item => {
+                if (item.startsWith('---')) {
+                    if (currentSymbols.length > 0) { groups.push({ name: currentName, symbols: currentSymbols }); currentSymbols = []; }
+                    else if (currentName !== '') groups.push({ name: currentName, symbols: [] });
+                    const raw = item.replace('---', '').trim();
+                    currentName = raw !== '' ? raw : ('\xA0' + '\u200B'.repeat(gc++));
+                } else {
+                    currentSymbols.push({ name: item });
+                }
+            });
+            if (currentSymbols.length > 0) groups.push({ name: currentName, symbols: currentSymbols });
             else if (currentName !== '') groups.push({ name: currentName, symbols: [] });
-            const raw = item.replace('---', '').trim();
-            currentName = raw !== '' ? raw : ('\xA0' + '\u200B'.repeat(gc++));
-        } else {
-            currentSymbols.push({ name: item });
+            if (groups.length === 0) groups.push({ name: '\u200B'.repeat(gc++), symbols: [] });
+
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                width: '100%', height: '100%',
+                symbolsGroups: groups,
+                showSymbolLogo: false, colorTheme: 'dark',
+                isTransparent: false, backgroundColor: '#050505', locale: 'en'
+            });
+
+            containerDiv.appendChild(script);
+            widgetDiv.appendChild(containerDiv);
+            layer.appendChild(widgetDiv);
         }
-    });
-    if (currentSymbols.length > 0) groups.push({ name: currentName, symbols: currentSymbols });
-    else if (currentName !== '') groups.push({ name: currentName, symbols: [] });
-    if (groups.length === 0) groups.push({ name: '\u200B'.repeat(gc++), symbols: [] });
 
-    const totalSymbols = groups.reduce((a, g) => a + g.symbols.length, 0);
-    const dynamicHeight = String(totalSymbols * 42 + groups.length * 38 + 52);
+        // --- SILENT IN-PLACE UPDATES ---
+        function insertItemsIntoTab(tabName, newItems, append = false) {
+            if (!myTickers.length || !myTickers[0].startsWith('===')) myTickers.unshift('=== MAIN');
 
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-        width: '100%', height: dynamicHeight,
-        symbolsGroups: groups,
-        showSymbolLogo: false, colorTheme: 'dark',
-        isTransparent: false, backgroundColor: '#050505', locale: 'en'
-    });
+            const built = [];
+            let inTarget = false, found = false;
 
-    containerDiv.appendChild(script);
-    widgetDiv.appendChild(containerDiv);
-    layer.appendChild(widgetDiv);
-}
+            for (let i = 0; i < myTickers.length; i++) {
+                if (myTickers[i].startsWith('===')) {
+                    const cur = myTickers[i].replace('===', '').trim();
+                    if (cur === tabName) {
+                        inTarget = true; found = true;
+                        built.push(`=== ${tabName}`);
+                        if (append) {
+                            let j = i + 1;
+                            while (j < myTickers.length && !myTickers[j].startsWith('===')) built.push(myTickers[j++]);
+                            built.push(...newItems);
+                            i = j - 1;
+                        } else {
+                            built.push(...newItems);
+                        }
+                    } else {
+                        inTarget = false; built.push(myTickers[i]);
+                    }
+                } else {
+                    if (!inTarget) built.push(myTickers[i]);
+                }
+            }
+            if (!found) { built.push(`=== ${tabName}`); built.push(...newItems); }
+            myTickers = built;
 
-// ─── PARTIAL UPDATES (no full rebuild) ───────────────────────────────────────
-function updateColumnWidget(colIndex) {
-    const tabs = getParsedTabs();
-    const activeTabName = columnsState[colIndex];
+            invalidateTabWidgets(tabName);
+            saveLocalState();
+            debouncedGistPush();
 
-    // Show/hide layers
-    const stack = document.getElementById(`wstack-${colIndex}`);
-    if (!stack) { renderApp(); return; }
-
-    // Ensure a layer exists for every tab (tabs may have been added)
-    tabs.forEach(tab => {
-        const lid = `wlayer-${colIndex}-${tab.name.replace(/\W/g,'_')}`;
-        if (!document.getElementById(lid)) {
-            const layer = document.createElement('div');
-            layer.className = 'widgetLayer';
-            layer.id = lid;
-            stack.appendChild(layer);
+            if (!found) {
+                renderApp();
+            } else {
+                columnsState.forEach((activeTab, colIndex) => {
+                    if (activeTab === tabName) updateColumnWidget(colIndex);
+                });
+            }
         }
-    });
 
-    // Toggle active class
-    stack.querySelectorAll('.widgetLayer').forEach(l => l.classList.remove('active'));
-    const activeLayer = document.getElementById(`wlayer-${colIndex}-${activeTabName.replace(/\W/g,'_')}`);
-    if (activeLayer) activeLayer.classList.add('active');
+        function updateColumnWidget(colIndex) {
+            const tabs = getParsedTabs();
+            const activeTabName = columnsState[colIndex];
 
-    // Inject if needed (cached)
-    injectWidget(colIndex, activeTabName, tabs);
-}
+            const stack = document.getElementById(`wstack-${colIndex}`);
+            if (!stack) return; 
 
-function updateColumnTabBar(colIndex) {
-    const tabs = getParsedTabs();
-    const activeTabName = columnsState[colIndex];
-    const oldBar = document.getElementById(`tabbar-${colIndex}`);
-    if (!oldBar) return;
-    const newBar = buildTabBar(colIndex, activeTabName, tabs);
-    oldBar.replaceWith(newBar);
-}
+            tabs.forEach(tab => {
+                const lid = `wlayer-${colIndex}-${tab.name.replace(/\W/g,'_')}`;
+                if (!document.getElementById(lid)) {
+                    const layer = document.createElement('div');
+                    layer.className = 'widgetLayer';
+                    layer.id = lid;
+                    stack.appendChild(layer);
+                }
+            });
 
-// ─── MODAL CONTROLS ───────────────────────────────────────────────────────────
-function openTabEditor(tabName) {
-    editingTabName = tabName;
-    document.getElementById('tabEditorTitle').innerText = `BATCH IMPORT: [${tabName}]`;
-    document.getElementById('tabEditor').value = getItemsForTab(tabName).join('\n');
-    document.getElementById('tabEditorModal').classList.add('visible');
-}
-function closeTabEditor() { document.getElementById('tabEditorModal').classList.remove('visible'); }
-function saveTabEdit() {
-    const newItems = document.getElementById('tabEditor').value.split('\n').map(t => t.trim()).filter(Boolean);
-    insertItemsIntoTab(editingTabName, newItems, false);
-    closeTabEditor();
-}
+            stack.querySelectorAll('.widgetLayer').forEach(l => l.classList.remove('active'));
+            const activeLayer = document.getElementById(`wlayer-${colIndex}-${activeTabName.replace(/\W/g,'_')}`);
+            if (activeLayer) activeLayer.classList.add('active');
 
-function openMasterEditor() {
-    document.getElementById('masterEditor').value = myTickers.join('\n');
-    document.getElementById('masterEditorModal').classList.add('visible');
-}
-function closeMasterEditor() { document.getElementById('masterEditorModal').classList.remove('visible'); }
-function saveMasterEdit() {
-    myTickers = document.getElementById('masterEditor').value.split('\n').map(t => t.trim()).filter(Boolean);
-    closeMasterEditor();
-    invalidateAllWidgets();
-    saveLocalState(); debouncedGistPush(); renderApp();
-}
+            injectWidget(colIndex, activeTabName, tabs);
+        }
 
-function toggleJournal() {
-    const modal = document.getElementById('journalModal');
-    modal.classList.toggle('visible');
-    if (modal.classList.contains('visible')) journalInput.focus();
-}
+        function updateColumnTabBar(colIndex) {
+            const tabs = getParsedTabs();
+            const activeTabName = columnsState[colIndex];
+            const oldBar = document.getElementById(`tabbar-${colIndex}`);
+            if (!oldBar) return;
+            const newBar = buildTabBar(colIndex, activeTabName, tabs);
+            oldBar.replaceWith(newBar);
+        }
 
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
-window.onload = () => {
-    applyColorMode();
-    if (myTickers.length === 0) myTickers = ['=== MAIN', 'NASDAQ:AAPL', 'NASDAQ:MSFT'];
-    renderApp();
-    autoPullFromGist();
-};
-</script>
+        // --- MODAL CONTROLS ---
+        function openTabEditor(tabName) { editingTabName = tabName; document.getElementById('tabEditorTitle').innerText = `BATCH IMPORT: [${tabName}]`; document.getElementById('tabEditor').value = getItemsForTab(tabName).join('\n'); document.getElementById('tabEditorModal').classList.add('visible'); updateHeaderActiveStates(); }
+        function closeTabEditor() { document.getElementById('tabEditorModal').classList.remove('visible'); updateHeaderActiveStates(); }
+        function saveTabEdit() { const rawText = document.getElementById('tabEditor').value; const newItems = rawText.split('\n').map(t => t.trim()).filter(t => t !== ""); insertItemsIntoTab(editingTabName, newItems, false); closeTabEditor(); }
+
+        function openMasterEditor() { document.getElementById('masterEditor').value = myTickers.join('\n'); document.getElementById('masterEditorModal').classList.add('visible'); updateHeaderActiveStates(); }
+        function closeMasterEditor() { document.getElementById('masterEditorModal').classList.remove('visible'); updateHeaderActiveStates(); }
+        function saveMasterEdit() { myTickers = document.getElementById('masterEditor').value.split('\n').map(t => t.trim()).filter(Boolean); closeMasterEditor(); workspace.innerHTML = ''; invalidateAllWidgets(); saveLocalState(); debouncedGistPush(); renderApp(); }
+
+        function toggleJournal() { const modal = document.getElementById('journalModal'); modal.classList.toggle('visible'); if(modal.classList.contains('visible')) { journalInput.focus(); } updateHeaderActiveStates(); }
+
+        window.onload = () => { applyColorMode(); if(myTickers.length === 0) myTickers = ["=== MAIN", "NASDAQ:AAPL", "NASDAQ:MSFT"]; renderApp(); autoPullFromGist(); };
+    </script>
 </body>
 </html>
