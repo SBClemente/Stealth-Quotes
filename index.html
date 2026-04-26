@@ -465,7 +465,7 @@
 
     <div id="footerBar">
         <div id="wsTabsContainer"></div>
-        <input type="text" id="wsInput" class="inline-tab-input" style="height: 100%; margin: 0 5px;" placeholder="Name...">
+        <input type="text" id="wsInput" class="inline-tab-input" style="height: 100%; margin: 0 5px;" placeholder="Workspace Name...">
         <button class="icon-btn" id="addWsBtn" onclick="showAddWs()" style="height: 100%; border-left: 1px solid #222; padding: 0 15px;">[+]</button>
     </div>
 
@@ -626,6 +626,7 @@
                         if (activeWsId === currentFocus.id) activeWsId = workspacesData[0].id;
                         syncColumnsFromWorkspace();
                         saveLocalState();
+                        debouncedGistPush();
                         workspace.innerHTML = '';
                         invalidateAllWidgets();
                         renderApp();
@@ -742,7 +743,7 @@
                 try {
                     const res = await fetch('https://api.github.com/gists', {
                         method: 'POST', headers: { 'Authorization': `token ${rawToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ public: false, files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } } })
+                        body: JSON.stringify({ public: false, files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal, workspaces: workspacesData, activeWs: activeWsId }) } } })
                     });
                     if(!res.ok) throw new Error("Permission Error");
                     const data = await res.json();
@@ -778,7 +779,7 @@
             try {
                 const res = await fetch(`https://api.github.com/gists/${id}`, {
                     method: 'PATCH', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal }) } } })
+                    body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify({ tickers: myTickers, journal: myJournal, workspaces: workspacesData, activeWs: activeWsId }) } } })
                 });
                 if(!res.ok) throw new Error("Sync Failed");
                 setStatus('✓ SYNCED', 'status-ok');
@@ -794,7 +795,15 @@
                 if(!res.ok) throw new Error("Pull Failed");
                 const gist = await res.json();
                 const cloudContent = JSON.parse(gist.files[GIST_FILENAME].content);
-                if (Array.isArray(cloudContent)) { myTickers = cloudContent; } else { myTickers = cloudContent.tickers || []; myJournal = cloudContent.journal || ""; }
+                if (Array.isArray(cloudContent)) { myTickers = cloudContent; } else { 
+                    myTickers = cloudContent.tickers || []; 
+                    myJournal = cloudContent.journal || ""; 
+                    if (cloudContent.workspaces && cloudContent.workspaces.length > 0) {
+                        workspacesData = cloudContent.workspaces;
+                        activeWsId = cloudContent.activeWs || workspacesData[0].id;
+                        syncColumnsFromWorkspace();
+                    }
+                }
                 saveLocalState(); journalInput.value = myJournal; 
                 invalidateAllWidgets();
                 workspace.innerHTML = ''; 
@@ -886,6 +895,7 @@
                 activeWsId = newId;
                 syncColumnsFromWorkspace();
                 saveLocalState();
+                debouncedGistPush();
                 renderApp();
             }
             input.value = '';
@@ -900,6 +910,7 @@
             activeWsId = id;
             syncColumnsFromWorkspace();
             saveLocalState();
+            debouncedGistPush();
             renderApp(); 
         }
 
@@ -911,6 +922,7 @@
             if (activeWsId === id) activeWsId = workspacesData[0].id;
             syncColumnsFromWorkspace();
             saveLocalState();
+            debouncedGistPush();
             workspace.innerHTML = ''; 
             invalidateAllWidgets();
             renderApp();
@@ -952,6 +964,7 @@
                         workspacesData.splice(toIdx, 0, moved);
                         draggedWsId = null;
                         saveLocalState();
+                        debouncedGistPush();
                         renderApp();
                     }
                 };
@@ -966,18 +979,19 @@
         }
 
         // --- MULTI-COLUMN UI SURGICAL RENDERING ---
-        function addColumn() { columnsState.push(getParsedTabs()[0].name); saveLocalState(); renderApp(); }
+        function addColumn() { columnsState.push(getParsedTabs()[0].name); saveLocalState(); debouncedGistPush(); renderApp(); }
         
         function removeColumn(index) { 
             for (const k in widgetCache) { if (k.startsWith(`${activeWsId}|${index}|`)) delete widgetCache[k]; }
             columnsState.splice(index, 1); 
             if(!columnsState.length) columnsState = ["MAIN"]; 
-            saveLocalState(); renderApp(); 
+            saveLocalState(); debouncedGistPush(); renderApp(); 
         }
 
         function switchColumnTab(colIndex, tabName) { 
             columnsState[colIndex] = tabName; 
             saveLocalState(); 
+            debouncedGistPush();
             updateColumnWidget(colIndex);
             updateColumnTabBar(colIndex);
         }
@@ -1041,6 +1055,7 @@
                     columnsState.splice(colIndex, 0, moved);
                     draggedColIndex = null;
                     saveLocalState();
+                    debouncedGistPush();
                     renderApp();
                 }
             };
