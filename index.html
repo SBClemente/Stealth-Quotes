@@ -392,32 +392,34 @@
             /* Lock viewport to exact visible screen size to prevent footer from hiding behind URL bars */
             body, html { overflow: hidden !important; height: 100vh; height: 100dvh; position: fixed; width: 100%; top: 0; left: 0; }
             
-            /* Allow top bar buttons to wrap into two rows perfectly */
-            #syncBar { flex-wrap: wrap; overflow-x: hidden; padding: 8px 10px; height: 95px; box-sizing: border-box; justify-content: center; gap: 5px; }
+            /* Allow top bar buttons to wrap into two rows perfectly and show status */
+            #syncBar { flex-wrap: wrap; overflow: visible; padding: 8px 10px; height: 105px; box-sizing: border-box; justify-content: center; gap: 5px; }
             #syncBar::-webkit-scrollbar { display: none; }
             .sync-btn { flex: 1 1 45%; padding: 8px 4px; }
-            #syncStatus { width: 100%; text-align: center; margin: 0; }
+            #syncStatus { width: 100%; text-align: center; margin: 0; padding-top: 2px; }
             
+            /* Make Config Panel absolute so it doesn't push the layout down and require scrolling */
+            #setupPanel { position: absolute; top: 100%; left: 0; width: 100%; background: #050505; padding: 15px 10px; border-bottom: 1px solid #333; z-index: 9000; justify-content: center; margin: 0; }
+
             #workspace { flex-direction: column; min-width: 100%; height: 100%; }
             
             /* Show only ONE watchlist monitor */
             .column-container:nth-child(n+2) { display: none !important; }
             
-            /* Remove borders to maximize horizontal width */
+            /* Maximize width but keep the default border to frame the Quote Monitor */
             .column-container { 
                 width: 100%; 
                 flex-shrink: 1; 
                 margin-bottom: 0; 
                 min-width: 0; 
                 height: 100%; 
-                border: none; 
             }
             
-            /* Calculate exact wrapper height: 95px header + 30px footer = 125px */
+            /* Calculate exact wrapper height and add SYMMETRIC padding OUTSIDE the Quote Monitor */
             #workspaceWrapper { 
-                padding: 0; 
-                height: calc(100vh - 125px); 
-                height: calc(100dvh - 125px); 
+                padding: 10px; 
+                height: calc(100vh - 135px); 
+                height: calc(100dvh - 135px); 
                 overflow: hidden;
             }
 
@@ -428,11 +430,13 @@
                 overflow: hidden; 
             }
             
-            /* Force 4 columns to render via min-width, then shrink them to fit the screen */
+            /* Force exactly 4 columns by strictly locking the width, and bump width up to naturally create padding after Chg% */
             .stealth-widget { 
-                min-width: 480px !important; 
-                height: 130% !important; /* Compensates for the zoom scale so no gap is left at bottom */
-                zoom: 0.78; 
+                width: 465px !important; 
+                min-width: 465px !important;
+                max-width: 465px !important;
+                height: 130% !important; /* Compensates for the zoom scale */
+                zoom: 0.77; /* Scaled down slightly to fit inside the new padded wrapper perfectly */
             }
         }
     </style>
