@@ -51,6 +51,7 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
+            white-space: nowrap; /* Forces text to stay on one line */
         }
         .sync-btn:hover { border-color: #888; color: #aaa; background: #111; }
         
@@ -388,19 +389,21 @@
         .ws-del-btn:hover { color: #aaa; }
         
         @media (max-width: 768px) {
-            /* Lock the screen from scrolling past the boundaries */
-            body, html { overflow: hidden; height: 100%; }
+            /* Lock viewport to exact visible screen size to prevent footer from hiding behind URL bars */
+            body, html { overflow: hidden !important; height: 100vh; height: 100dvh; position: fixed; width: 100%; top: 0; left: 0; }
             
-            /* Prevent top bar from wrapping and throwing off the height calculation */
-            #syncBar { flex-wrap: nowrap; overflow-x: auto; padding: 10px; }
-            #syncBar::-webkit-scrollbar { height: 0px; }
+            /* Allow top bar buttons to wrap into two rows perfectly */
+            #syncBar { flex-wrap: wrap; overflow-x: hidden; padding: 8px 10px; height: 95px; box-sizing: border-box; justify-content: center; gap: 5px; }
+            #syncBar::-webkit-scrollbar { display: none; }
+            .sync-btn { flex: 1 1 45%; padding: 8px 4px; }
+            #syncStatus { width: 100%; text-align: center; margin: 0; }
             
             #workspace { flex-direction: column; min-width: 100%; height: 100%; }
             
-            /* Show only ONE watchlist monitor, hide all others */
+            /* Show only ONE watchlist monitor */
             .column-container:nth-child(n+2) { display: none !important; }
             
-            /* Remove borders to maximize horizontal width for the 4 rows (Name, Value, Change, Chg%) */
+            /* Remove borders to maximize horizontal width */
             .column-container { 
                 width: 100%; 
                 flex-shrink: 1; 
@@ -410,11 +413,26 @@
                 border: none; 
             }
             
-            /* Remove padding for max width, lock the exact height to dock the input bar */
+            /* Calculate exact wrapper height: 95px header + 30px footer = 125px */
             #workspaceWrapper { 
                 padding: 0; 
-                height: calc(100vh - 85px); 
+                height: calc(100vh - 125px); 
+                height: calc(100dvh - 125px); 
                 overflow: hidden;
+            }
+
+            /* CRITICAL: Prevent the widget stack from expanding and pushing the bottom input bar off-screen */
+            .widgetStack { 
+                flex: 1 1 0%; 
+                min-height: 0; 
+                overflow: hidden; 
+            }
+            
+            /* Force 4 columns to render via min-width, then shrink them to fit the screen */
+            .stealth-widget { 
+                min-width: 480px !important; 
+                height: 130% !important; /* Compensates for the zoom scale so no gap is left at bottom */
+                zoom: 0.78; 
             }
         }
     </style>
@@ -536,6 +554,16 @@
         }
 
         document.addEventListener('click', (e) => {
+            // Check if user clicked the dark overlay background outside of a modal
+            if (e.target.classList.contains('modal-overlay')) {
+                closeTabEditor();
+                closeMasterEditor();
+                const jModal = document.getElementById('journalModal');
+                if (jModal.classList.contains('visible')) toggleJournal();
+                updateHeaderActiveStates();
+                return;
+            }
+
             const col = e.target.closest('.column-container');
             const tabBtn = e.target.closest('.tab-btn');
             const wsBtn = e.target.closest('.ws-btn');
