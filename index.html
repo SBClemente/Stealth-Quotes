@@ -430,13 +430,13 @@
                 overflow: hidden; 
             }
             
-            /* Force exactly 4 columns by strictly locking the width, and bump width up to naturally create padding after Chg% */
+            /* Force exactly 4 columns and perfectly match the right border by inversing the zoom scale (100% / 0.77 = ~130%) */
             .stealth-widget { 
-                width: 465px !important; 
-                min-width: 465px !important;
-                max-width: 465px !important;
+                width: 130% !important; 
+                min-width: 450px !important;
+                max-width: 130% !important;
                 height: 130% !important; /* Compensates for the zoom scale */
-                zoom: 0.77; /* Scaled down slightly to fit inside the new padded wrapper perfectly */
+                zoom: 0.77; 
             }
         }
     </style>
@@ -464,7 +464,7 @@
 
     <div id="footerBar">
         <div id="wsTabsContainer"></div>
-        <input type="text" id="wsInput" class="inline-tab-input" style="height: 100%; margin: 0 5px;" placeholder="Workspace Name...">
+        <input type="text" id="wsInput" class="inline-tab-input" style="height: 100%; margin: 0 5px;" placeholder="Name...">
         <button class="icon-btn" id="addWsBtn" onclick="showAddWs()" style="height: 100%; border-left: 1px solid #222; padding: 0 15px;">[+]</button>
     </div>
 
